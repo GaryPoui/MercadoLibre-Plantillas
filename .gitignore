@@ -1,0 +1,31 @@
+# Archivos reales, informes privados y exportaciones
+/data/private/**
+!/data/private/.gitkeep
+/exports/
+
+# Credenciales y configuración local
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Entornos y archivos temporales
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+node_modules/
+dist/
+coverage/
+~$*
+*.log
+.DS_Store
+Thumbs.db
+
+# Conservar las habilidades del proyecto; excluir estado local de agentes
+.codex/
+.agents/auth.json
+.agents/sessions/
+.agents/logs/
