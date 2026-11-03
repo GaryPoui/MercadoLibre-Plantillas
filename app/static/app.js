@@ -36,15 +36,16 @@ async function authStatus() {
 }
 async function navigate() {
   message('');
-  let view = location.hash.slice(1).split('?')[0] || 'home'; if (!['home', 'work', 'unified', 'history', 'profiles', 'catalog'].includes(view)) view = 'home';
+  let view = location.hash.slice(1).split('?')[0] || 'home'; if (!['home', 'work', 'unified', 'history', 'providers', 'profiles', 'catalog'].includes(view)) view = 'home';
   document.querySelectorAll('.view').forEach(node => node.hidden = node.id !== `view-${view}`);
   document.querySelectorAll('[data-view]').forEach(node => node.dataset.view === view ? node.setAttribute('aria-current', 'page') : node.removeAttribute('aria-current'));
-  $('page-name').textContent = { home: 'Inicio', work: 'Cargar una lista', unified: 'Lista unificada', history: 'Archivos e historial', profiles: 'Proveedores y perfiles', catalog: 'Comparación de prueba' }[view];
+  $('page-name').textContent = { home: 'Inicio', work: 'Cargar una lista', unified: 'Lista unificada', history: 'Archivos e historial', providers: 'Proveedores y listas', profiles: 'Perfiles de importación', catalog: 'Comparación de prueba' }[view];
   if ($('shell').hidden) return;
   if (view === 'home') await loadHome();
   if (view === 'history') await loadHistory();
-  if (view === 'unified') { const requested = new URLSearchParams(location.hash.split('?')[1] ?? '').get('status'); $('unified-filter').value = requested === 'pending' ? 'pending' : 'all'; await loadUnified(); }
+  if (view === 'unified') { const requested = new URLSearchParams(location.hash.split('?')[1] ?? '').get('status'); $('unified-filter').value = requested === 'pending' ? 'pending' : 'all'; $('unified-source').value = new URLSearchParams(location.hash.split('?')[1] ?? '').get('source') === 'current' ? 'current' : 'reviews'; await loadUnified(); }
   if (view === 'profiles') await loadProfiles();
+  if (view === 'providers') await loadProviders();
   if (view === 'catalog') await loadCatalog();
 }
 function sheetMetadata() { return state.imported?.sheets?.find(sheet => sheet.name === $('sheet').value); }
@@ -165,7 +166,7 @@ function drawComparison(result) {
   $('comparison').innerHTML = `<p>${nfmt(differences.length)} resultados para la cuenta elegida. Ninguno se envía a Mercado Libre.</p><div class="table-wrap comparison-table" tabindex="0"><table><caption class="sr-only">Comparación con catálogo controlado</caption><thead><tr><th scope="col">Fila / código</th><th scope="col">Publicación</th><th scope="col">Precio previo / propuesto</th><th scope="col">Cantidad previa / propuesta</th><th scope="col">Estado y motivos</th></tr></thead><tbody>${differences.map(item => `<tr><td>${esc(item.row_number)} · ${esc(item.product_key)}</td><td>${esc(item.listing_id)}</td><td>${esc(display(item.current_price))} / ${esc(display(item.proposed_price))}</td><td>${esc(display(item.current_quantity))} / ${esc(display(item.proposed_quantity))}</td><td>${esc(comparisonLabels[item.status] ?? item.status)}${item.blocked ? ' · Bloqueado' : ' · Solo propuesta local'}${(item.reasons ?? []).map(reason => `<span class="issue">${esc(reason)}</span>`).join('')}</td></tr>`).join('')}</tbody></table></div>`;
 }
 $('auth-form').addEventListener('submit', run(async () => { await api(`/api/auth/${state.configured ? 'login' : 'setup'}`, { method: 'POST', body: { password: $('password').value } }); $('password').value = ''; if (await authStatus()) { await loadProfiles(); await navigate(); } }));
-$('logout').onclick = run(async () => { await api('/api/auth/logout', { method: 'POST' }); state.imported = null; state.review = null; unifiedRows = []; $('home-summary').replaceChildren(); $('home-recent').replaceChildren(); $('unified-table').replaceChildren(); $('unified-summary').replaceChildren(); $('workspace').hidden = true; $('history-list').replaceChildren(); $('history-reviews').replaceChildren(); $('profiles-list').replaceChildren(); $('review-panel').hidden = true; $('catalog-json').value = '[]'; await authStatus(); });
+$('logout').onclick = run(async () => { await api('/api/auth/logout', { method: 'POST' }); state.imported = null; state.review = null; providerData = []; supplierDraft = null; $('supplier-sources').replaceChildren(); $('supplier-versions').replaceChildren(); $('supplier-preview-panel').hidden = true; $('supplier-version-detail').hidden = true; unifiedRows = []; $('home-summary').replaceChildren(); $('home-recent').replaceChildren(); $('unified-table').replaceChildren(); $('unified-summary').replaceChildren(); $('workspace').hidden = true; $('history-list').replaceChildren(); $('history-reviews').replaceChildren(); $('profiles-list').replaceChildren(); $('review-panel').hidden = true; $('catalog-json').value = '[]'; await authStatus(); });
 $('upload-form').addEventListener('submit', run(async () => { const file = $('file').files[0]; if (!file) throw new Error('Elegí un archivo antes de cargar.'); if (file.size > 10 * 1024 * 1024) throw new Error('El archivo supera 10 MiB. Prepará una copia más pequeña.'); const body = new FormData(); body.append('file', file); openImport(await api('/api/imports', { method: 'POST', body })); message('Archivo conservado. Elegí su estructura para crear la revisión.'); }));
 $('sheet').onchange = () => { const mapping = Object.fromEntries([...document.querySelectorAll('[data-role]')].map(select => [select.dataset.role, select.value])); renderColumns(mapping); $('mapping-note').textContent = 'Revisá las columnas para esta hoja o pedí una nueva sugerencia.'; };
 $('profile-select').onchange = run(async () => { const profile = state.profiles.find(item => String(item.id ?? item.version_id) === $('profile-select').value); if (!profile) return; if (!state.imported) throw new Error('Cargá primero un archivo.'); if (!state.imported.sheets.some(sheet => sheet.name === profile.config.sheet)) throw new Error('El perfil usa una hoja que no existe en esta carga. Revisá su compatibilidad antes de reutilizarlo.'); setConfig({ ...profile.config, supplier: profile.supplier }); $('profile-note').textContent = `Perfil ${profile.name}, versión ${profile.version}; proveedor ${profile.supplier}. Revisá la correspondencia antes de crear la revisión.`; $('profile-name').value = profile.name; $('supplier').value = profile.supplier; });
@@ -210,8 +211,13 @@ function suggestMapping() {
 $('suggest-mapping').onclick = run(suggestMapping);
 let unifiedRows = [];
 let unifiedPage = 1;
+let unifiedGeneration = 0;
 async function loadUnified() {
-  const result = await api('/api/standardized');
+  const source = $('unified-source').value;
+  const generation = ++unifiedGeneration;
+  const result = await api(`/api/standardized?source=${source}`);
+  if (generation !== unifiedGeneration || $('unified-source').value !== source || $('shell').hidden) return;
+  $('unified-export').href = `/api/standardized/export?source=${source}`;
   unifiedRows = result.rows; unifiedPage = 1;
   const summary = result.summary;
   $('unified-summary').innerHTML = [['total', 'Productos'], ['ready', 'Listos'], ['pending', 'Pendientes'], ['unreviewed_imports', 'Cargas sin revisión']].map(([key, label]) => `<div class="summary-item"><strong>${nfmt(summary[key])}</strong><span>${label}</span></div>`).join('');
@@ -223,11 +229,12 @@ function drawUnified() {
   const rows = unifiedRows.filter(row => (filter === 'all' || row.status === filter) && (!search || [row.sku, row.supplier, row.filename, row.description].some(value => String(value ?? '').toLocaleLowerCase('es').includes(search))));
   const pages = Math.max(1, Math.ceil(rows.length / 50)); unifiedPage = Math.min(unifiedPage, pages);
   const selected = rows.slice((unifiedPage - 1) * 50, unifiedPage * 50);
-  $('unified-table').innerHTML = selected.length ? `<table class="unified-data"><caption class="sr-only">Lista común de SKU y precios con procedencia</caption><thead><tr><th scope="col">SKU</th><th scope="col">Precio</th><th scope="col">Descripción</th><th scope="col">Proveedor</th><th scope="col">Origen</th><th scope="col">Estado</th><th scope="col">Incidencias</th></tr></thead><tbody>${selected.map(row => `<tr><th scope="row">${esc(display(row.sku))}</th><td><strong class="price-value">${esc(display(row.price))}</strong></td><td>${esc(display(row.description))}</td><td>${esc(row.supplier || 'Sin identificar')}</td><td>${esc(row.filename)}<br><small>${esc(row.sheet)} · fila ${esc(row.row_number)}</small><details><summary>Ver revisión</summary><small>${esc(row.review_id)}</small></details></td><td><span class="badge ${row.status === 'ready' ? 'usable' : 'pending'}">${row.status === 'ready' ? 'Listo' : 'Pendiente'}</span></td><td>${row.issues.map(issue => `<span class="issue">${esc(issue)}</span>`).join('') || 'Sin incidencias'}</td></tr>`).join('')}</tbody></table>` : `<p class="empty">${unifiedRows.length ? 'No hay coincidencias con estos filtros. Probá otra búsqueda o limpiá los filtros.' : 'Tu lista unificada empieza con un archivo. Cargá la lista de un proveedor y confirmá SKU y precio.'}</p>`;
+  $('unified-table').innerHTML = selected.length ? `<table class="unified-data"><caption class="sr-only">Lista común de SKU y precios con procedencia</caption><thead><tr><th scope="col">SKU</th><th scope="col">Precio</th><th scope="col">Descripción</th><th scope="col">Proveedor</th><th scope="col">Origen</th><th scope="col">Estado</th><th scope="col">Incidencias</th></tr></thead><tbody>${selected.map(row => `<tr><th scope="row">${esc(display(row.sku))}</th><td><strong class="price-value">${esc(display(row.price))}</strong></td><td>${esc(display(row.description))}</td><td>${esc(row.supplier || 'Sin identificar')}${row.scope ? `<small>${esc(row.scope)}</small>` : ''}${row.currency ? `<small>${esc(row.currency)} · ${esc(row.price_kind)}</small>` : ''}</td><td>${esc(row.filename)}<br><small>${esc(row.sheet)} · fila ${esc(row.row_number)}</small><details><summary>Ver revisión</summary><small>${esc(row.review_id)}</small></details></td><td><span class="badge ${row.status === 'ready' ? 'usable' : 'pending'}">${row.status === 'ready' ? 'Listo' : 'Pendiente'}</span></td><td>${row.issues.map(issue => `<span class="issue">${esc(issue)}</span>`).join('') || 'Sin incidencias'}</td></tr>`).join('')}</tbody></table>` : `<p class="empty">${unifiedRows.length ? 'No hay coincidencias con estos filtros. Probá otra búsqueda o limpiá los filtros.' : `${$('unified-source').value === 'current' ? 'Todavía no activaste listas. Prepará una versión desde Proveedores y listas.' : 'Tu lista unificada empieza con un archivo. Cargá una lista y confirmá SKU y precio.'}`}</p>`;
   $('unified-page').textContent = `Página ${nfmt(unifiedPage)} de ${nfmt(pages)} · ${nfmt(rows.length)} productos`;
   $('unified-prev').disabled = unifiedPage <= 1; $('unified-next').disabled = unifiedPage >= pages;
 }
 $('refresh-unified').onclick = run(loadUnified);
+$('unified-source').onchange = run(loadUnified);
 $('unified-search').oninput = () => { unifiedPage = 1; drawUnified(); };
 $('unified-filter').onchange = () => { unifiedPage = 1; drawUnified(); };
 $('unified-prev').onclick = () => { unifiedPage--; drawUnified(); };
@@ -256,16 +263,174 @@ $('clear-unified').onclick = () => { $('unified-search').value = ''; $('unified-
 let homeGeneration = 0;
 async function loadHome() {
   const generation = ++homeGeneration;
-  let imports, snapshot, profiles;
+  let imports, snapshot, profiles, registered, current;
   try {
-    [imports, snapshot, profiles] = await Promise.all([api('/api/imports'), api('/api/standardized'), api('/api/profiles')]);
+    [imports, snapshot, profiles, registered, current] = await Promise.all([api('/api/imports'), api('/api/standardized'), api('/api/profiles'), api('/api/suppliers'), api('/api/standardized?source=current')]);
   } catch (error) {
     if (generation === homeGeneration) { $('home-summary').replaceChildren(); $('home-recent').innerHTML = '<p class="empty">No pudimos cargar el resumen. Volvé a Inicio para reintentar. Tus archivos guardados se conservan.</p>'; }
     throw error;
   }
   if (generation !== homeGeneration || $('shell').hidden) return;
-  const suppliers = new Set(snapshot.rows.map(row => row.supplier).filter(Boolean));
-  const counters = [[imports.length, 'Archivos cargados', '#history', 'Tus originales e historial'], [snapshot.summary.total, 'Productos revisados', '#unified', 'SKU y precios reunidos'], [snapshot.summary.pending, 'Para revisar', '#unified?status=pending', 'Datos que necesitan atención'], [suppliers.size, 'Proveedores identificados', '#profiles', `${profiles.filter(p => !p.retired).length} perfiles disponibles`]];
+  const hasCurrent = current.rows.length > 0;
+  const working = hasCurrent ? current : snapshot;
+  const listLink = hasCurrent ? '#unified?source=current' : '#unified';
+  const pendingLink = hasCurrent ? '#unified?source=current&status=pending' : '#unified?status=pending';
+  const counters = [[imports.length, 'Archivos cargados', '#history', 'Tus originales e historial'], [working.summary.total, hasCurrent ? 'Productos vigentes' : 'Productos revisados', listLink, hasCurrent ? 'Versiones activadas por proveedor' : 'SKU y precios reunidos'], [working.summary.pending, 'Para revisar', pendingLink, 'Datos que necesitan atención'], [registered.filter(p => !p.retired).length, 'Proveedores activos', '#providers', `${profiles.filter(p => !p.retired).length} perfiles disponibles`]];
   $('home-summary').innerHTML = counters.map(([count, label, href, note], i) => `<a class="home-metric metric-${i}" href="${href}"><span>${esc(label)}</span><strong>${nfmt(count)}</strong><small>${esc(note)}</small></a>`).join('');
   $('home-recent').innerHTML = imports.length ? imports.slice(0, 3).map(item => `<article class="recent-file"><span class="file-symbol" aria-hidden="true">${esc(item.filename.split('.').pop().toUpperCase())}</span><div class="grow"><strong>${esc(item.filename)}</strong><small>${date(item.created_at)}</small></div><span class="badge ${item.latest_review_id ? 'usable' : 'pending'}">${item.latest_review_id ? 'Revisado' : 'Sin revisar'}</span></article>`).join('') : '<div class="empty home-empty"><span class="file-symbol" aria-hidden="true">XLSX</span><h3>Tu primer archivo empieza acá</h3><p>Cargá un Excel o CSV. Te ayudamos a relacionar el SKU y el precio sin modificar el original.</p><a href="#work" class="button primary">Cargar mi primera lista</a></div>';
+}
+// Supplier identities and activated snapshots are separate from import profiles.
+let providerData = [];
+let supplierDraft = null;
+let supplierDraftGeneration = 0;
+let supplierDiffPage = 1;
+let supplierScopeRequest = 0;
+let providerGeneration = 0;
+let providerEditGeneration = 0;
+let scopeEditGeneration = 0;
+let versionDetail = null;
+let versionPage = 1;
+const changeLabels = { added: 'Nuevo', changed: 'Precio cambiado', unchanged: 'Sin cambio', absent: 'Ausente', ambiguous: 'Alternativas ambiguas', invalid: 'Datos pendientes' };
+const updateLabels = { ...changeLabels, not_updated_partial: 'No actualizado: lista parcial', not_updated_invalid: 'Precio anterior conservado', previous_price: 'Precio previo ante alternativas' };
+function clearSupplierDraft() { supplierDraftGeneration++; supplierDraft = null; $('supplier-preview-panel').hidden = true; }
+function selectedSupplier(id) { return providerData.find(p => p.id === id); }
+function allScopes() { return providerData.flatMap(p => p.scopes.map(scope => ({ ...scope, provider: p }))); }
+function providerEditor() {
+  const p = selectedSupplier($('provider-edit').value);
+  $('provider-name').value = p?.name ?? '';
+  $('provider-aliases').value = (p?.aliases ?? []).join('\n');
+  $('provider-retired').checked = p?.retired ?? false;
+}
+function scopeEditor() {
+  const scope = selectedSupplier($('scope-provider').value)?.scopes.find(s => s.id === $('scope-edit').value);
+  $('scope-name').value = scope?.name ?? '';
+  $('scope-currency').value = scope?.currency ?? '';
+  $('scope-meaning').value = scope?.price_kind ?? '';
+  $('scope-currency').readOnly = !!scope?.current_version_id;
+  $('scope-meaning').readOnly = !!scope?.current_version_id;
+}
+function scopeOptions(preferredId = '') {
+  const scopes = selectedSupplier($('scope-provider').value)?.scopes ?? [];
+  $('scope-edit').innerHTML = '<option value="">Nuevo alcance</option>' + scopes.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
+  if (scopes.some(s => s.id === preferredId)) $('scope-edit').value = preferredId;
+}
+async function loadProviders(preferred = {}) {
+  const generation = ++providerGeneration;
+  const providerEdit = providerEditGeneration, scopeEdit = scopeEditGeneration;
+  const previousProvider = preferred.providerId ?? $('provider-edit').value;
+  const previousScopeProvider = preferred.providerId ?? $('scope-provider').value;
+  const previousScope = preferred.scopeId ?? $('scope-edit').value;
+  const previousListScope = preferred.scopeId ?? $('supplier-list-scope').value;
+  const providers = await api('/api/suppliers');
+  if (generation !== providerGeneration || $('shell').hidden) return;
+  providerData = providers;
+  const options = providers.map(p => `<option value="${esc(p.id)}">${esc(p.name)}${p.retired ? ' (retirado)' : ''}</option>`).join('');
+  $('provider-edit').innerHTML = '<option value="">Nuevo proveedor</option>' + options;
+  $('scope-provider').innerHTML = '<option value="">Elegí un proveedor</option>' + options;
+  if (selectedSupplier(previousProvider)) $('provider-edit').value = previousProvider;
+  if (selectedSupplier(previousScopeProvider)) $('scope-provider').value = previousScopeProvider;
+  if (providerEdit === providerEditGeneration) providerEditor();
+  scopeOptions(previousScope);
+  if (scopeEdit === scopeEditGeneration) scopeEditor();
+  const scopes = allScopes();
+  $('supplier-list-scope').innerHTML = '<option value="">Elegí un alcance</option>' + scopes.map(s => `<option value="${esc(s.id)}">${esc(s.provider.name)} / ${esc(s.name)}${s.provider.retired ? ' (retirado)' : ''}</option>`).join('');
+  if (scopes.some(s => s.id === previousListScope)) $('supplier-list-scope').value = previousListScope;
+  await loadSupplierScope();
+}
+$('provider-form').addEventListener('input', () => providerEditGeneration++);
+$('scope-form').addEventListener('input', () => scopeEditGeneration++);
+$('provider-edit').onchange = () => { providerEditGeneration++; providerEditor(); };
+$('scope-provider').onchange = () => { scopeEditGeneration++; scopeOptions(); scopeEditor(); };
+$('scope-edit').onchange = () => { scopeEditGeneration++; scopeEditor(); };
+$('provider-form').addEventListener('submit', run(async () => {
+  const previous = selectedSupplier($('provider-edit').value);
+  const body = { name: $('provider-name').value.trim(), aliases: $('provider-aliases').value.split('\n').map(s => s.trim()).filter(Boolean), retired: $('provider-retired').checked };
+  if (previous) body.expected_revision = previous.revision;
+  const result = await api(previous ? `/api/suppliers/${encodeURIComponent(previous.id)}` : '/api/suppliers', { method: previous ? 'PUT' : 'POST', body });
+  clearSupplierDraft(); await loadProviders({ providerId: result.id });
+  message('Proveedor guardado con identidad estable. Sus versiones anteriores se conservan.');
+}));
+$('scope-form').addEventListener('submit', run(async () => {
+  const providerId = $('scope-provider').value;
+  if (!providerId) throw new Error('Elegí un proveedor.');
+  const previous = selectedSupplier(providerId)?.scopes.find(s => s.id === $('scope-edit').value);
+  const body = { name: $('scope-name').value.trim(), currency: $('scope-currency').value.trim().toUpperCase(), price_kind: $('scope-meaning').value.trim() };
+  if (previous) body.expected_revision = previous.revision;
+  const result = await api(previous ? `/api/supplier-scopes/${encodeURIComponent(previous.id)}` : `/api/suppliers/${encodeURIComponent(providerId)}/scopes`, { method: previous ? 'PUT' : 'POST', body });
+  clearSupplierDraft(); await loadProviders({ providerId, scopeId: result.id });
+  message('Alcance guardado. Elegí las revisiones y el tipo de actualización antes de comparar.');
+}));
+async function loadSupplierScope() {
+  const request = ++supplierScopeRequest;
+  clearSupplierDraft(); $('supplier-list-mode').value = ''; versionDetail = null; $('supplier-version-detail').hidden = true;
+  $('supplier-sources').replaceChildren(); $('supplier-versions').replaceChildren();
+  const ident = $('supplier-list-scope').value;
+  const scope = allScopes().find(s => s.id === ident);
+  $('scope-details').textContent = scope ? `${scope.provider.name} / ${scope.name} · ${scope.currency || 'Moneda pendiente'} · ${scope.price_kind || 'Significado pendiente'}${scope.provider.retired ? ' · Proveedor retirado' : ''}` : 'Creá o elegí un alcance para seleccionar sus archivos.';
+  if (!ident) { $('supplier-versions').innerHTML = '<p class="empty">Elegí un alcance para consultar sus versiones.</p>'; return; }
+  const [sources, versions] = await Promise.all([api(`/api/supplier-scopes/${encodeURIComponent(ident)}/sources`), api(`/api/supplier-scopes/${encodeURIComponent(ident)}/versions`)]);
+  if (request !== supplierScopeRequest || $('supplier-list-scope').value !== ident || $('shell').hidden) return;
+  $('supplier-sources').innerHTML = sources.length ? sources.map(r => `<label class="source-choice"><input type="checkbox" value="${esc(r.id)}" data-source-review><span><strong>${esc(r.filename)}</strong><small>${esc(r.sheet)} · ${date(r.created_at)} · ${nfmt(r.summary.usable)} utilizables / ${nfmt(r.summary.pending)} pendientes</small></span></label>`).join('') : '<p class="empty">No hay revisiones compatibles. Cargá y revisá un archivo de este proveedor; los nombres anteriores requieren un alias confirmado.</p>';
+  $('supplier-versions').innerHTML = versions.length ? versions.map(v => `<article class="record"><div class="grow"><strong>${v.id === scope.current_version_id ? 'Versión vigente' : 'Versión anterior'}${v.restore_of ? ' · restaurada' : ''}</strong><p>${date(v.created_at)} · ${nfmt(v.summary.total)} productos · ${nfmt(v.summary.pending)} pendientes</p><small>${esc(v.id)}</small></div><button type="button" class="secondary" data-inspect-version="${esc(v.id)}">Consultar</button><a class="button secondary" href="/api/supplier-versions/${encodeURIComponent(v.id)}/export">Descargar XLSX</a><button type="button" class="quiet" data-restore-version="${esc(v.id)}">Preparar restauración</button></article>`).join('') : '<p class="empty">Todavía no hay versiones activadas para este alcance.</p>';
+  $('supplier-sources').querySelectorAll('input').forEach(input => input.onchange = clearSupplierDraft);
+  $('supplier-versions').querySelectorAll('[data-inspect-version]').forEach(b => b.onclick = run(async () => {
+    const result = await api(`/api/supplier-versions/${encodeURIComponent(b.dataset.inspectVersion)}`);
+    if ($('supplier-list-scope').value !== result.scope_id) return;
+    versionDetail = result; versionPage = 1; drawSupplierVersion();
+    $('supplier-version-detail').scrollIntoView({ block: 'start' });
+  }));
+  $('supplier-versions').querySelectorAll('[data-restore-version]').forEach(b => b.onclick = run(async () => {
+    clearSupplierDraft(); const generation = supplierDraftGeneration;
+    const draft = await api(`/api/supplier-versions/${encodeURIComponent(b.dataset.restoreVersion)}/restore-preview`, { method: 'POST', body: {} });
+    if ($('supplier-list-scope').value === draft.scope_id && generation === supplierDraftGeneration) showSupplierPreview(draft);
+  }));
+}
+$('supplier-list-scope').onchange = run(loadSupplierScope);
+$('supplier-list-mode').onchange = clearSupplierDraft;
+$('refresh-providers').onclick = run(() => loadProviders());
+$('supplier-preview-form').addEventListener('submit', run(async () => {
+  const scope = $('supplier-list-scope').value;
+  clearSupplierDraft(); const generation = supplierDraftGeneration;
+  const reviewIds = [...document.querySelectorAll('[data-source-review]:checked')].map(i => i.value);
+  if (!scope || !reviewIds.length) throw new Error('Elegí un alcance y al menos una revisión.');
+  const draft = await api(`/api/supplier-scopes/${encodeURIComponent(scope)}/preview`, { method: 'POST', body: { review_ids: reviewIds, mode: $('supplier-list-mode').value } });
+  if ($('supplier-list-scope').value === scope && generation === supplierDraftGeneration) showSupplierPreview(draft);
+}));
+function showSupplierPreview(draft) {
+  supplierDraft = draft; supplierDiffPage = 1; $('supplier-preview-panel').hidden = false;
+  $('supplier-preview-info').textContent = `${draft.supplier_name} / ${draft.scope} · ${draft.mode === 'partial' ? 'Actualización parcial' : 'Lista completa'}${draft.restore_of ? ' · Restauración exacta de una versión anterior' : ''}`;
+  $('supplier-preview-blockers').textContent = draft.blockers.join(' ');
+  $('supplier-preview-blockers').className = draft.blockers.length ? 'issue' : 'muted';
+  $('activate-supplier-list').disabled = !draft.can_activate;
+  $('supplier-preview-summary').innerHTML = [['total', 'Productos resultantes'], ['ready', 'Listos'], ['pending', 'Pendientes']].map(([key, label]) => `<div class="summary-item"><strong>${nfmt(draft.summary[key])}</strong><span>${label}</span></div>`).join('');
+  drawSupplierDifferences(); $('supplier-preview-panel').scrollIntoView({ block: 'start' });
+}
+function drawSupplierDifferences() {
+  if (!supplierDraft) return;
+  const all = supplierDraft.differences;
+  const pages = Math.max(1, Math.ceil(all.length / 50)); supplierDiffPage = Math.min(pages, supplierDiffPage);
+  $('supplier-differences').innerHTML = all.length ? `<table><caption class="sr-only">Cambios por SKU antes de activar</caption><thead><tr><th scope="col">SKU</th><th scope="col">Cambio</th><th scope="col">Precio anterior</th><th scope="col">Precio en la lista elegida</th><th scope="col">Origen y pendientes</th></tr></thead><tbody>${all.slice((supplierDiffPage - 1) * 50, supplierDiffPage * 50).map(d => `<tr><th scope="row">${esc(display(d.sku))}</th><td>${esc(changeLabels[d.kind] ?? d.kind)}</td><td>${esc(display(d.previous_price))}</td><td>${esc(display(d.proposed_price))}</td><td>${d.candidate_rows.flatMap(r => r.issues).map(issue => `<span class="issue">${esc(issue)}</span>`).join('')}<details><summary>Ver orígenes y alternativas</summary>${[...d.previous_rows, ...d.candidate_rows].map(r => `<p>${esc(r.filename)} · ${esc(r.sheet)} · fila ${esc(r.row_number)}<br>SKU ${esc(display(r.sku))} · precio ${esc(display(r.price))}<br><small>Revisión ${esc(r.review_id)}</small></p>`).join('')}</details></td></tr>`).join('')}</tbody></table>` : '<p class="empty">No hay diferencias para mostrar.</p>';
+  $('supplier-diff-page').textContent = `Página ${nfmt(supplierDiffPage)} de ${nfmt(pages)} · ${nfmt(all.length)} SKU`;
+  $('supplier-diff-prev').disabled = supplierDiffPage <= 1; $('supplier-diff-next').disabled = supplierDiffPage >= pages;
+}
+$('supplier-diff-prev').onclick = () => { supplierDiffPage--; drawSupplierDifferences(); };
+$('supplier-diff-next').onclick = () => { supplierDiffPage++; drawSupplierDifferences(); };
+$('activate-supplier-list').onclick = run(async () => {
+  if (!supplierDraft?.can_activate) return;
+  const draft = supplierDraft;
+  if (!confirm(`¿Activar esta versión de ${draft.supplier_name}? ${draft.summary.total} productos y ${draft.summary.pending} pendientes. ${draft.restore_of ? 'Se recuperarán exactamente las filas de la versión elegida.' : 'El historial anterior se conserva.'}`)) return;
+  $('activate-supplier-list').disabled = true;
+  try {
+    await api(`/api/supplier-previews/${encodeURIComponent(draft.id)}/activate`, { method: 'POST', body: {} });
+    await loadProviders({ scopeId: draft.scope_id });
+    message('Versión activada. Ya aparece en Listas vigentes por proveedor. El historial se conserva.');
+  } catch (error) { clearSupplierDraft(); throw error; }
+});
+function drawSupplierVersion() {
+  if (!versionDetail) return;
+  const rows = versionDetail.rows, pages = Math.max(1, Math.ceil(rows.length / 50));
+  versionPage = Math.min(versionPage, pages); $('supplier-version-detail').hidden = false;
+  $('supplier-version-detail').innerHTML = `<h3>Contenido de la versión elegida</h3><p>${esc(versionDetail.supplier_name)} / ${esc(versionDetail.scope)} · ${esc(versionDetail.currency)} · ${esc(versionDetail.price_kind)}</p><div class="table-wrap" tabindex="0" aria-label="Productos de la versión guardada"><table><thead><tr><th scope="col">SKU</th><th scope="col">Precio</th><th scope="col">Actualización</th><th scope="col">Origen / incidencias</th></tr></thead><tbody>${rows.slice((versionPage - 1) * 50, versionPage * 50).map(r => `<tr><th scope="row">${esc(display(r.sku))}</th><td>${esc(display(r.price))}</td><td>${esc(updateLabels[r.update_state] ?? r.update_state)}</td><td>${esc(r.filename)} · ${esc(r.sheet)} · fila ${esc(r.row_number)}${r.attempted_review_id ? `<small>Revisión nueva pendiente: ${esc(r.attempted_review_id)}</small>` : ''}${r.issues.map(i => `<span class="issue">${esc(i)}</span>`).join('')}</td></tr>`).join('')}</tbody></table></div><div class="pagination"><button type="button" id="version-prev" class="secondary" ${versionPage <= 1 ? 'disabled' : ''}>Anterior</button><span>Página ${nfmt(versionPage)} de ${nfmt(pages)} · ${nfmt(rows.length)} productos</span><button type="button" id="version-next" class="secondary" ${versionPage >= pages ? 'disabled' : ''}>Siguiente</button></div>`;
+  $('version-prev').onclick = () => { versionPage--; drawSupplierVersion(); };
+  $('version-next').onclick = () => { versionPage++; drawSupplierVersion(); };
 }

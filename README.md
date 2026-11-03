@@ -71,6 +71,37 @@ usa exclusivamente el catálogo controlado guardado en este equipo y nunca publi
 Formatos iniciales: XLSX y CSV UTF-8; no XLS, XLSM, PDF ni macros. Las fórmulas fuera
 del conjunto admitido y las dependencias inválidas quedan pendientes.
 
+## Proveedores y listas vigentes
+
+En **Proveedores y listas**:
+
+1. Creá un proveedor con nombre estable. Agregá alias solo cuando hayas confirmado
+   que los nombres anteriores corresponden a ese proveedor.
+2. Creá un alcance de lista y declarale moneda y significado del precio. No hay
+   moneda ni precio comercial predeterminados. Otro significado requiere otro alcance.
+3. Cargá y revisá archivos desde **Cargar una lista**. Seleccioná sus revisiones en el
+   alcance correspondiente; podés incluir varias hojas revisadas del mismo libro.
+4. Elegí **Lista completa** o **Actualización parcial** y compará. Revisá nuevos,
+   cambios, ausentes y alternativas antes de confirmar la activación.
+5. Consultá las versiones activadas. Cada una tiene descarga propia; restaurar prepara
+   otra vista previa y requiere confirmación, sin borrar antecedentes.
+
+Una fila nueva inválida conserva el precio anterior certificado y queda pendiente.
+Los ausentes conservan valor y origen: no se convierten en cero ni agotan stock.
+Los duplicados conservan alternativas y, cuando existe, el precio previo certificado.
+En una lista completa, los ausentes se señalan para revisión; en una parcial, como
+no actualizados. No se eliminan automáticamente.
+
+En **Lista unificada**, elegí **Listas vigentes por proveedor** para ver exclusivamente
+versiones activadas. **Revisiones de archivos** conserva el consolidado anterior.
+Inicio muestra productos y pendientes vigentes cuando existe una activación.
+Las descargas de vigentes incluyen moneda, significado, alcance y actualización.
+
+Editar un proveedor conserva su identidad; su nombre anterior queda como alias.
+Retirarlo bloquea nuevas activaciones y mantiene el historial. Los archivos existentes
+no se reasignan automáticamente: elegí proveedor/alcance al preparar su primera versión.
+Una vez activado, ese archivo no se puede reutilizar bajo otro proveedor o alcance.
+
 ## Verificación
 
 ```powershell
@@ -99,8 +130,8 @@ reconstruye en memoria; no descarga ni publica datos. Ver [resultados y límites
 
 ## Próximo paso
 
-La siguiente ampliación funcional es gestionar una lista vigente por proveedor,
-comparando precios anteriores/nuevos antes de activarla. Las siguientes entregas están
+La gestión de listas vigentes por proveedor ya está implementada. La próxima entrega
+es conectar cuentas y leer publicaciones. Las siguientes entregas están
 especificadas en la [hoja de ruta](docs/HOJA_DE_RUTA.md): proveedores, cuentas/catálogo,
 precios verificados, inventario/ventas y alertas. Son capacidades futuras.
 

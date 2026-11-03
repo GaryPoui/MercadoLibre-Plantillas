@@ -181,3 +181,13 @@ y versiones vigentes, cuentas/catálogoML, precios verificados, inventario/venta
 alertas. No se presentan como implementadas. Consultar docs/HOJA_DE_RUTA.md.
 La lectura directa de tres páginas oficialesML volvió a devolver403; documentación
 accesible y capacidades reales siguen siendo condiciones previas de la integración.
+
+## Proveedores y versiones vigentes, 3 de noviembre de 2026
+
+El usuario pidió continuar. Se implementó003 con proveedor estable/alias/retiro,
+alcances con semántica explícita y listas completas/parciales. Vista previa inmutable,
+activación atómica, historial y restauración conservan originales y versiones.
+Los precios inválidos/ambiguos no desplazan el último precio certificado. Ausentes
+permanecen pendientes sin precio cero ni stock implícito. Inicio usa vigentes cuando
+existen.89tests y recorrido Chrome aprobados; datos privados de referencia ausentes.
+Activa local003; siguiente004 requiere revisar documentación accesible y aplicación/cuentas.

@@ -283,3 +283,18 @@ form[aria-busy=true] { opacity: .65; cursor: progress; }
 
 .extra-mapping { grid-column: 1 / -1; margin-top: 8px; border-top: 1px solid var(--line); padding-top: 8px; }
 .extra-mapping > summary { font-size: .8rem; font-weight: 400; color: #62718a; }
+/* Supplier-list management uses the same workspace controls and typography. */
+.supplier-setup { align-items: start; }
+.supplier-setup .panel { margin-top: 0; }
+.supplier-setup form > button { margin-top: 20px; }
+.supplier-setup .split { gap: 16px; }
+.source-choices { display: grid; gap: 8px; max-height: 340px; overflow: auto; }
+.source-choice { display: flex; align-items: start; gap: 12px; padding: 13px 15px; margin: 0; border: 1px solid var(--line); border-radius: 7px; background: #f9fbff; cursor: pointer; }
+.source-choice input { width: 18px; height: 18px; flex-shrink: 0; margin-top: 3px; }
+.source-choice span { min-width: 0; overflow-wrap: anywhere; }
+.source-choice strong { font-size: .85rem; }
+#supplier-preview-panel > .section-heading, #view-providers > .panel > .section-heading { margin-top: 0; }
+#supplier-differences details p { font-size: .77rem; margin: 10px 0; }
+#supplier-version-detail { border-top: 1px solid var(--line); margin-top: 25px; padding-top: 10px; }
+#view-providers .form-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+@media (max-width: 700px) { #view-providers .form-grid { grid-template-columns: 1fr; gap: 0; } #supplier-versions .record .grow { flex-basis: 100%; } }

@@ -74,17 +74,18 @@ def consolidate(sources):
     }}
 
 
-def export_standardized(snapshot):
+def export_standardized(snapshot, fields=None):
     """Use the existing safe deterministic writer; no reread or recalculation."""
     def cells(values):
         return {get_column_letter(i): value for i, value in enumerate(values, 1)}
 
+    fields = FIELDS if fields is None else fields
     rows = [{"row_number": 1, "kind": "header", "status": "usable",
-             "values": cells([label for _, label in FIELDS]), "issues": []}]
+             "values": cells([label for _, label in fields]), "issues": []}]
     for number, row in enumerate(snapshot["rows"], 2):
         values = []
-        for field, _ in FIELDS:
-            value = row[field]
+        for field, _ in fields:
+            value = row.get(field)
             if field == "issues":
                 value = " | ".join(value)
             elif field == "status":

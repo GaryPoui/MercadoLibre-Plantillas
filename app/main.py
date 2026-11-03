@@ -12,6 +12,7 @@ from pathlib import Path
 import re
 import time
 from urllib.parse import urlsplit
+from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File
 from fastapi.responses import FileResponse, JSONResponse, Response
@@ -22,6 +23,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from . import engine
 from .store import Store, Conflict, default_directory
 from .standardize import consolidate, export_standardized
+from .suppliers import Suppliers, Missing, export_version
 
 MAX_BODY = 12 * 1024 * 1024
 MAX_FILE = 10 * 1024 * 1024
@@ -105,6 +107,28 @@ class CatalogInput(BaseModel):
 
 class CompareInput(BaseModel):
     account_id: str = Field(min_length=1, max_length=100)
+
+
+class SupplierInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    name: str = Field(min_length=1, max_length=100)
+    aliases: list[str] = Field(default_factory=list, max_length=30)
+    retired: bool = False
+    expected_revision: int | None = Field(default=None, ge=1)
+
+
+class ScopeInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    name: str = Field(min_length=1, max_length=100)
+    currency: str = Field(default="", pattern=r"^(?:[A-Za-z]{3})?$", max_length=3)
+    price_kind: str = Field(default="", max_length=100)
+    expected_revision: int | None = Field(default=None, ge=1)
+
+
+class SupplierPreviewInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    review_ids: list[str] = Field(min_length=1, max_length=100)
+    mode: Literal["complete", "partial"]
 
 
 def json_fingerprint(value):
@@ -198,6 +222,7 @@ def create_app(data_dir: Path | None = None):
     app = FastAPI(title="MercadoLibre · Plantillas", docs_url=None, redoc_url=None)
     store = Store(Path(data_dir) if data_dir else default_directory())
     app.state.store = store
+    suppliers = Suppliers(store)
     login_failures = defaultdict(list)
 
     @app.middleware("http")
@@ -227,6 +252,10 @@ def create_app(data_dir: Path | None = None):
     @app.exception_handler(Conflict)
     async def conflict_error(request, error):
         return JSONResponse({"detail": str(error)}, 409)
+
+    @app.exception_handler(Missing)
+    async def missing_supplier_record(request, error):
+        return JSONResponse({"detail": str(error)}, 404)
 
     @app.exception_handler(ValueError)
     async def invalid_error(request, error):
@@ -401,17 +430,88 @@ def create_app(data_dir: Path | None = None):
         return store.catalog()
 
     @app.get("/api/standardized")
-    def standardized(request: Request):
+    def standardized(request: Request, source: Literal["reviews", "current"] = "reviews"):
         require_session(request)
+        if source == "current":
+            return suppliers.current()
         return consolidate(store.latest_sources())
 
     @app.get("/api/standardized/export")
-    def standardized_export(request: Request):
+    def standardized_export(request: Request, source: Literal["reviews", "current"] = "reviews"):
         require_session(request)
-        snapshot = consolidate(store.latest_sources())
-        return Response(export_standardized(snapshot),
+        snapshot = suppliers.current() if source == "current" else consolidate(store.latest_sources())
+        content = export_version(snapshot) if source == "current" else export_standardized(snapshot)
+        return Response(content,
                         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         headers={"Content-Disposition": 'attachment; filename="lista_unificada.xlsx"'})
+
+    @app.get("/api/suppliers")
+    def list_suppliers(request: Request):
+        require_session(request)
+        return suppliers.list()
+
+    @app.post("/api/suppliers")
+    def create_supplier(payload: SupplierInput, request: Request):
+        require_session(request)
+        return suppliers.save_supplier(payload.model_dump())
+
+    @app.put("/api/suppliers/{ident}")
+    def update_supplier(ident: str, payload: SupplierInput, request: Request):
+        require_session(request)
+        return suppliers.save_supplier(payload.model_dump(), ident)
+
+    @app.post("/api/suppliers/{ident}/scopes")
+    def create_scope(ident: str, payload: ScopeInput, request: Request):
+        require_session(request)
+        return suppliers.save_scope(ident, payload.model_dump())
+
+    @app.put("/api/supplier-scopes/{ident}")
+    def update_scope(ident: str, payload: ScopeInput, request: Request):
+        require_session(request)
+        scope = get_record("supplier_scope", ident)
+        return suppliers.save_scope(scope["supplier_id"], payload.model_dump(), ident)
+
+    @app.get("/api/supplier-scopes/{ident}/sources")
+    def supplier_sources(ident: str, request: Request):
+        require_session(request)
+        return suppliers.sources(ident)
+
+    @app.post("/api/supplier-scopes/{ident}/preview")
+    def supplier_preview(ident: str, payload: SupplierPreviewInput, request: Request):
+        require_session(request)
+        return suppliers.preview(ident, payload.review_ids, payload.mode)
+
+    @app.get("/api/supplier-previews/{ident}")
+    def get_supplier_preview(ident: str, request: Request):
+        require_session(request)
+        return get_record("supplier_preview", ident)
+
+    @app.post("/api/supplier-previews/{ident}/activate")
+    def activate_supplier_preview(ident: str, request: Request):
+        require_session(request)
+        return suppliers.activate(ident)
+
+    @app.get("/api/supplier-scopes/{ident}/versions")
+    def supplier_versions(ident: str, request: Request):
+        require_session(request)
+        return suppliers.versions(ident)
+
+    @app.get("/api/supplier-versions/{ident}")
+    def supplier_version(ident: str, request: Request):
+        require_session(request)
+        return get_record("supplier_version", ident)
+
+    @app.get("/api/supplier-versions/{ident}/export")
+    def supplier_version_export(ident: str, request: Request):
+        require_session(request)
+        return Response(export_version(get_record("supplier_version", ident)),
+                        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        headers={"Content-Disposition": f'attachment; filename="lista_{ident}.xlsx"'})
+
+    @app.post("/api/supplier-versions/{ident}/restore-preview")
+    def restore_supplier_version(ident: str, request: Request):
+        require_session(request)
+        return suppliers.restore_preview(ident)
 
     @app.post("/api/catalog")
     def replace_catalog(payload: CatalogInput, request: Request):

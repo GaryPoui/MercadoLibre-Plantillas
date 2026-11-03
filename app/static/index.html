@@ -39,7 +39,8 @@
 <a href="#work" data-view="work">Cargar una lista</a>
 <a href="#unified" data-view="unified">Lista unificada</a>
 <a href="#history" data-view="history">Archivos e historial</a>
-<a href="#profiles" data-view="profiles">Proveedores y perfiles</a>
+<a href="#providers" data-view="providers">Proveedores y listas</a>
+<a href="#profiles" data-view="profiles">Perfiles de importación</a>
 <a href="#catalog" data-view="catalog">Comparación de prueba</a>
 </nav>
 <div class="side-bottom">
@@ -252,7 +253,7 @@
 </div>
 <div class="result-next">
 <p>La revisión ya está guardada. Podés corregir pendientes o verla junto a las otras listas.</p>
-<a href="#unified" class="button secondary">Ver en lista unificada</a>
+<a href="#unified" class="button secondary">Ver en lista unificada</a><a href="#providers" class="button primary">Preparar lista vigente</a>
 </div>
 <div id="summary" class="summary-strip">
 </div>
@@ -321,7 +322,7 @@
 <h1>Cada SKU. Cada precio.</h1>
 <p>Todas tus listas revisadas en un mismo lugar, con su proveedor y su origen.</p>
 </div>
-<a class="button primary" href="/api/standardized/export">Descargar lista unificada XLSX</a>
+<a id="unified-export" class="button primary" href="/api/standardized/export">Descargar lista unificada XLSX</a>
 </div>
 <details class="list-help">
 <summary>Cómo se reúnen tus listas</summary>
@@ -330,6 +331,7 @@
 <div id="unified-summary" class="summary-strip">
 </div>
 <div class="toolbar">
+<div><label for="unified-source">Qué listas ver</label><select id="unified-source"><option value="reviews">Revisiones de archivos</option><option value="current">Listas vigentes por proveedor</option></select></div>
 <div class="grow">
 <label for="unified-search">Buscar SKU, proveedor o archivo</label>
 <input id="unified-search" type="search" autocomplete="off">
@@ -367,6 +369,17 @@
 <div id="history-reviews">
 </div>
 </section>
+<section id="view-providers" class="view" hidden>
+<div class="page-heading"><div><p class="kicker">Versiones de tus listas</p><h1>El precio vigente,<br>con su historia.</h1><p>Identificá al proveedor, compará sus listas y activá una versión cuando hayas revisado los cambios.</p></div><button type="button" id="refresh-providers" class="secondary">Actualizar proveedores</button></div>
+<div class="split supplier-setup">
+<form id="provider-form" class="panel"><h2>1. Proveedor</h2><label for="provider-edit">Crear o editar</label><select id="provider-edit"><option value="">Nuevo proveedor</option></select><label for="provider-name">Nombre</label><input id="provider-name" maxlength="100" required autocomplete="off"><label for="provider-aliases">Otros nombres confirmados</label><textarea id="provider-aliases" rows="2" placeholder="Un alias por línea"></textarea><small>Permiten asociar archivos anteriores con otro nombre. No se adivinan equivalencias.</small><label class="check"><input id="provider-retired" type="checkbox">Retirar proveedor (conservar historial)</label><button type="submit" class="primary">Guardar proveedor</button></form>
+<form id="scope-form" class="panel"><h2>2. Alcance de la lista</h2><p class="muted">Separá listas con monedas o significados distintos, por ejemplo por formato o canal.</p><label for="scope-provider">Proveedor</label><select id="scope-provider" required></select><label for="scope-edit">Crear o editar alcance</label><select id="scope-edit"><option value="">Nuevo alcance</option></select><label for="scope-name">Nombre del alcance</label><input id="scope-name" maxlength="100" required autocomplete="off"><div class="split"><div><label for="scope-currency">Moneda declarada</label><input id="scope-currency" maxlength="3" pattern="[A-Za-z]{3}" placeholder="Código de 3 letras" autocomplete="off"></div><div><label for="scope-meaning">Qué representa el precio</label><input id="scope-meaning" maxlength="100" placeholder="Según tu lista" autocomplete="off"></div></div><small>Sin estos datos podés revisar, pero no activar. No se convierten monedas ni se aplican impuestos.</small><button type="submit" class="secondary">Guardar alcance</button></form>
+</div>
+<section class="panel"><h2>3. Comparar antes de activar</h2><form id="supplier-preview-form"><div class="form-grid"><div><label for="supplier-list-scope">Proveedor y alcance</label><select id="supplier-list-scope" required></select></div><div><label for="supplier-list-mode">Tipo de actualización</label><select id="supplier-list-mode" required><option value="">Elegí una opción</option><option value="complete">Lista completa</option><option value="partial">Actualización parcial</option></select></div></div><p id="scope-details" class="muted"></p><p>Seleccioná las revisiones que forman la nueva lista. Podés incluir varias hojas, pero solo una revisión de cada archivo y hoja.</p><div id="supplier-sources" class="source-choices"></div><div class="actions"><button type="submit" class="primary">Comparar lista seleccionada</button><a href="#work">Cargar otro archivo</a></div></form></section>
+<section id="supplier-preview-panel" class="panel" hidden><div class="section-heading"><div><h2>Revisá qué va a cambiar</h2><p id="supplier-preview-info"></p></div><button type="button" id="activate-supplier-list" class="primary">Confirmar y activar esta versión</button></div><p id="supplier-preview-blockers" role="status"></p><div id="supplier-preview-summary" class="summary-strip"></div><p class="muted">Los precios inválidos no reemplazan un precio anterior certificado. Los ausentes se conservan pendientes. Una restauración recupera exactamente las filas de la versión elegida.</p><div id="supplier-differences" class="table-wrap" tabindex="0" aria-label="Diferencias entre listas"></div><div class="pagination"><button type="button" id="supplier-diff-prev" class="secondary">Anterior</button><span id="supplier-diff-page" aria-live="polite"></span><button type="button" id="supplier-diff-next" class="secondary">Siguiente</button></div></section>
+<section class="panel"><div class="section-heading"><div><h2>Versiones activadas</h2><p>Consultar o descargar conserva cada resultado. Restaurar prepara una nueva comparación.</p></div><a href="#unified?source=current" class="button secondary">Ver todas las listas vigentes</a></div><div id="supplier-versions"></div><div id="supplier-version-detail" hidden></div></section>
+</section>
+
 <section id="view-profiles" class="view" hidden>
 <div class="page-heading">
 <div>

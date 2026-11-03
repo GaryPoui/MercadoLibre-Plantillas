@@ -124,3 +124,33 @@ La configuración activa de Spec Kit es local en `.specify/feature.json`, ignora
 el diseño existente de Spec Kit; la memoria y hoja de ruta versionadas indican002.
 Las fuentes oficialesML no pudieron leerse por403; los contratos/capacidades no se
 declaran verificados. No hay nuevas escrituras externas ni datos de prueba en la BD de uso.
+
+## Entrega003: proveedores y listas vigentes
+
+2026-11-03: proveedores con identidad estable, alias, edición y retiro; alcances con
+moneda/significado declarados; comparación de revisiones, activación local, versiones
+inmutables, descarga y restauración mediante otra vista previa.
+
+- Suite completa: 89 pruebas aprobadas (73 anteriores y16 de esta entrega).
+  Persiste el aviso de TestClient documentado, sin fallos.
+- Probadas activaciones simultáneas: una gana y la otra recibe conflicto, sin
+  sobrescritura ni versiones huérfanas. Ediciones/retiro invalidan previews viejos.
+- Precio cero, ceros iniciales, ausencias, inválidos y duplicados conservan estados
+  distintos. Un último precio certificado sobrevive a una lista ambigua y otra inválida.
+- Probados aislamiento por proveedor/alcance, asociación de varias hojas de un libro,
+  metadatos obligatorios para activar, semántica inmutable y restauración obsoleta.
+- Exportación histórica reproducible, consulta de vigentes y persistencia tras reabrir.
+  Las nuevas rutas mantienen autenticación y CSRF; no hay escrituras Mercado Libre.
+- Chrome: crear proveedor/alcance, seleccionar revisión, comparar, activar, actualizar
+  de cero a12, restaurar y conservar descarga histórica. Tabla de vigentes contiene
+  una fila por el SKU único del caso, sin las cargas históricas duplicadas.
+- Respuesta tardía de una comparación se descarta al cambiar la selección; el usuario
+  debe comparar otra vez. Inicio usa vigentes después de activar, evitando pendientes
+  causados por alternativas históricas. Recorrido a390px sin desbordamiento de página.
+- Capturas de escritorio/móvil revisadas. El recorrido anterior de motor/panel sigue
+  aprobado. Las referencias privadas continúan ausentes; fixtures solo sintéticos.
+
+Spec Kit: checklist5/5, diez requisitos y tres criterios cubiertos por seis tareas;
+sin hallazgos críticos en análisis de consistencia. Persistencia usa tipos nuevos en
+la tabla existente, sin migración destructiva. Los originales y revisiones no se alteran.
+La activación declara vigente una lista local; no demuestra publicación ni sincronía remota.
