@@ -50,3 +50,23 @@ de dependencias deben repetir estas comprobaciones.
 
 La verificación visual y el recorrido de teclado implícito de los controles no constituyen
 una auditoría completa ni certificación WCAG. No se ejecutó auditoría de seguridad externa.
+
+## Revalidación al retomar la rama
+
+2026-11-03: leídos el contexto, la memoria y los artefactos de Spec Kit en
+`codex/mvp-excel`. Las 18 tareas ya estaban completadas. Se creó el entorno `.venv`
+con Python 3.12.14 y se instalaron las versiones fijadas sin modificar dependencias.
+
+- Suite completa: 66 pruebas aprobadas; persiste el aviso de TestClient documentado.
+- Recorrido Chrome contra un servidor con datos temporales separados: aprobado,
+  incluidos XLSX/CSV, factor cero, paginación, corrección, exportación, perfiles,
+  versiones, retiro, historial, comparación Full y vista móvil; sin errores JavaScript.
+- Casos privados: omitidos explícitamente (`private_reference_unavailable`);
+  esta copia solo contiene `data/private/.gitkeep`. Los nueve resultados anteriores
+  son evidencia histórica, no una comprobación repetida en este equipo.
+- Servidor de uso iniciado en `http://127.0.0.1:8765`: salud correcta y acceso inicial
+  sin configurar, listo para que el operador cree su contraseña. No se trasladaron
+  datos ni credenciales del recorrido de prueba al servidor de uso.
+
+No se detectaron fallos que exigieran cambios en la aplicación durante esta revisión.
+El proceso de prueba se detuvo después del recorrido; el servidor de uso queda activo.
