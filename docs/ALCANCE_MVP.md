@@ -8,7 +8,9 @@ referencia Google Sheets de 17 pestañas y se añadió conversión de listas de 
 a formatos similares, con retroalimentación mediante futuras cargas y correcciones.
 Faltan listas originales, pero el usuario delegó avanzar con las referencias existentes,
 preparar casos y basar las reglas en las planillas con cambios posteriores. La base
-inicial está en [BASE_INICIAL_V0.md](BASE_INICIAL_V0.md); la etapa continúa sin código.
+inicial está en [BASE_INICIAL_V0.md](BASE_INICIAL_V0.md). La autorización posterior
+permitió implementar el conversor/revisor local, ver [validación](VALIDACION_MVP.md).
+El alcance general de integración descrito abajo todavía no está implementado completo.
 
 ## MVP de referencia
 

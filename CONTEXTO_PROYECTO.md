@@ -160,3 +160,13 @@ Se empieza por el MVP de la especificación activa: conversor/revisor Excel aut�
 Las integraciones reales de precios/stock/ventas se mantienen como siguientes entregas,
 sin afirmar cuentas conectadas ni habilitar escrituras con capacidades desconocidas.
 Memoria compacta: `docs/memory/INDEX.md`; notas por hito, hasta120 palabras, sin datos.
+
+## Entrega del MVP local, 3 de noviembre de 2026
+
+Implementada la especificación001 con FastAPI, motorXLSX/CSV, SQLite local fuera de
+OneDrive y panel web. Incluye autenticación, correcciones/revisiones, perfiles/reglas
+versionados, historial, exportación determinista y comparación por cuenta contra
+catálogo controlado.66tests,9casos privados y recorrido Chrome aprobados; detalles
+en `docs/VALIDACION_MVP.md`. Instalación y uso en README. Memorias compactas en docs/memory/.
+No se conectaron cuentas ni se implementaron escriturasML/ventas/inventario transaccional.
+Estas son próximas funcionalidades del objetivo general, no capacidades del MVP actual.

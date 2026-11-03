@@ -2,6 +2,11 @@
 
 Fecha: 2026-11-02. Versión: 0.1. Decisiones iniciales tomadas por delegación del usuario.
 
+Estado posterior2026-11-03: esta es la base histórica previa a implementación. El usuario
+autorizó después desarrollar; el MVP local está completado según
+[VALIDACION_MVP.md](VALIDACION_MVP.md). Las restricciones históricas de no escribir
+código de esta preparación ya fueron sustituidas por esa autorización.
+
 ## Autorización y alcance
 
 El usuario indicó usar los Excel ya compartidos, recibir después listas originales

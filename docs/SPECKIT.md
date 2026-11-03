@@ -42,9 +42,9 @@ Se puede pedir el trabajo en lenguaje natural; los nombres ayudan a indicar la f
 - Especificación: borrador ampliado el 2026-11-02 tras perfilar una referencia de 17 pestañas;
   aclarado para plan v0.1 por delegación del usuario, con casos de referencia y reglas
   modificables. La llegada de originales de proveedores deja de bloquear ese plan.
-- Plan inicial: siguiente fase con la base y casos preparados. Contratos de nuevos
-  proveedores e integración externa se ampliarán con sus evidencias; aún no hay tareas finales.
-- Implementación y conexión a Mercado Libre: aún no iniciadas.
+- Plan, investigación, modelo, contratos y18tareas: completados para el MVP local.
+- Implementación: terminada y verificada2026-11-03; ver [validación](VALIDACION_MVP.md).
+- Conexión real a Mercado Libre: no iniciada; funcionalidad posterior.
 
 La referencia local `.specify/feature.json` faltaba al comenzar esta revisión y se
 restableció mediante `Save-FeatureJson`, función oficial de los scripts existentes.
@@ -54,7 +54,7 @@ El archivo de referencia local sigue excluido de Git por la configuración de Sp
 
 La carpeta de funcionalidad se guarda en `.specify/feature.json`. Esta versión no requiere
 una rama con el mismo nombre. No se instaló la extensión Git: se utiliza Git normal y
-ramas `codex/` cuando se necesiten. La preparación conserva la rama actual.
+ramas `codex/` cuando se necesiten. La entrega del MVP vive en `codex/mvp-excel`.
 
 ## Comprobaciones de preparación
 

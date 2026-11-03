@@ -18,8 +18,8 @@ Comunicar avances y resultados en español claro.
 
 ## Estado y datos
 
-El proyecto está preparado, sin aplicación implementada. Se recibió una referencia
-Google Sheets; faltan listas originales de proveedores y salidas aprobadas. Leer
+Existe un MVP Excel local: ver README y docs/VALIDACION_MVP.md. Se recibió una referencia
+Google Sheets; nuevas listas originales ampliarán los perfiles existentes. Leer
 `docs/REPLANTEAMIENTO_BASE.md`, `docs/REFERENCIA_EXCEL.md` y `docs/HABILIDADES.md`.
 Analizar nuevas cargas según `docs/ANALISIS_EXCEL.md` antes de cerrar el contrato del importador.
 No inventar encabezados, fórmulas de precios, moneda, impuestos, volúmenes ni claves de unión.
