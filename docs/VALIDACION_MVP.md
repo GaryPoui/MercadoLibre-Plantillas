@@ -1,5 +1,9 @@
 # Verificación del MVP Excel local
 
+Ampliación vigente: [validación local 004–007](VALIDACION_OPERACION_LOCAL.md),
+117 pruebas y dos recorridos Chrome. Las verificaciones siguientes conservan la
+historia de entregas anteriores; no certifican integración real con Mercado Libre.
+
 Fecha: 2026-11-03 (Argentina). Rama: `codex/mvp-excel`.
 Alcance: especificación001, conversión/revisión autónoma; no integración real Mercado Libre.
 

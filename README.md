@@ -8,6 +8,9 @@ con sincronización bidireccional como objetivo general. Primer MVP local desarr
 MVP Excel local implementado y verificado el 2026-11-03: carga XLSX/CSV, selección de
 hojas y columnas, revisión y corrección, perfiles y cálculos versionados, historial,
 exportación reproducible y comparación por cuenta contra un catálogo controlado.
+Ampliado con catálogo y vínculos explícitos, propuestas de precios simuladas,
+inventario propio compartido, observaciones Full, ventas manuales, alertas y auditoría.
+Guía de estas funciones: [operación local](docs/OPERACION_LOCAL.md).
 No hay conexión ni escrituras reales en Mercado Libre. No es un despliegue público.
 
 ## Iniciar en Windows

@@ -12,7 +12,7 @@ La lectura directa devolvió403 en las tres. Los resultados de búsqueda no sust
 la revisión de las páginas completas ni prueban permisos de una cuenta. No se adoptan
 plazos, límites, endpoints de escritura o funciones habilitadas a partir de snippets.
 
-Antes del plan de004: contrastar autorización, requisitos de retorno, permisos,
+Antes del plan de integración real de004: contrastar autorización, requisitos de retorno, permisos,
 renovación, revocación e identidad con documentación accesible y aplicación real.
 Antes de005: comprobar edición de precios por destino, moneda, automatizaciones,
 variaciones, control de conflictos y lectura de verificación.
@@ -22,3 +22,7 @@ descubrir permisos sobre productos sin un alcance controlado y autorizado.
 
 Las especificaciones contienen condiciones verificables de negocio sin declarar
 habilitados esos contratos. Las credenciales permanecerán fuera del repositorio.
+
+Actualización: usuario sin cuenta autoriza el resto. Las partes locales004–007 usan
+referencias/capturas manuales y simulador; las condiciones anteriores siguen pendientes.
+Ver [operación local](OPERACION_LOCAL.md). No se incorpora ningún conector de red ficticio.

@@ -2,8 +2,30 @@
 
 **Feature Directory**: `specs/006-inventario-ventas`
 **Created**: 2026-11-03
-**Status**: Especificada; no implementada; plan técnico posterior
+**Status**: Parte local implementada y verificada; integración externa diferida por el usuario
 **Input**: Continuar los specs faltantes del sistema ampliable de listas y Mercado Libre.
+
+## Clarifications — continuación sin cuenta Mercado Libre
+
+El usuario indica que todavía no tiene cuenta y solicita avanzar con todo el resto.
+Esta entrega implementa la parte local utilizable y las pruebas controladas, sin OAuth,
+credenciales, consultas ni escrituras remotas. Toda cuenta/publicación capturada es una
+referencia local; simular nunca equivale a publicar ni verificar Mercado Libre.
+Las cláusulas que requieren cuenta/contrato externo permanecen diferidas, no cumplidas.
+No se envía correo: se prepara un aviso descargable con destinatario explícito.
+Reglas de precios, moneda, unidades, depósitos, márgenes y mínimos se ingresan explícitamente.
+Política local versionada y confirmada: reservar al registrar, descontar al despachar,
+cancelar solo reservas y reponer únicamente devoluciones recibidas confirmadas.
+Los eventos de prueba/locales no se presentan como ventas consultadas a Mercado Libre.
+Full solo admite capturas observadas identificadas como manuales; ajustes/ventas locales
+no modifican su cantidad. Las asignaciones comparten una única existencia física.
+
+## Requisitos de esta entrega local
+
+- **LFR-001**: Mantener una existencia propia por producto/ubicación, con conteo y margen explícitos; asignaciones y reservas comparten el mismo físico y no pueden superarlo.
+- **LFR-002**: Confirmar/versionar política de reserva al registrar y descuento al despachar. Cancelar libera reservas; devoluciones recibidas confirmadas reponen solo su incremento acumulado.
+- **LFR-003**: Registrar ventas manuales por cuenta/referencia con eventos idempotentes y secuencias; movimientos atómicos, duplicados/fuera de orden sin doble descuento y transiciones incompatibles bloqueadas.
+- **LFR-004**: Full solo conserva observaciones manuales con origen/fecha y cuenta; nunca admite ajustes/asignaciones propias ni descuenta dos veces. Conteos de conciliación guardan diferencias sin ajustes automáticos.
 
 ## User Scenarios & Testing
 
@@ -60,7 +82,7 @@ Como operador quiero registrar ventas y cancelaciones una sola vez y conciliar d
 
 ## Assumptions and Dependencies
 
-- Requiere004; usar infraestructura de operaciones verificables de005. No implementada.
+- Requiere004; usar infraestructura de operaciones de005. Eventos y conciliación remotos no implementados.
 - La política exacta de estados de venta, unidades, margen y depósitos es una condición previa a activación, no un valor inventado.
 
 ## Condiciones previas a implementación

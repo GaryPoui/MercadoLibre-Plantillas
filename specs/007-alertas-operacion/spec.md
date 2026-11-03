@@ -2,8 +2,30 @@
 
 **Feature Directory**: `specs/007-alertas-operacion`
 **Created**: 2026-11-03
-**Status**: Especificada; no implementada; plan técnico posterior
+**Status**: Parte local implementada y verificada; integración externa diferida por el usuario
 **Input**: Continuar los specs faltantes del sistema ampliable de listas y Mercado Libre.
+
+## Clarifications — continuación sin cuenta Mercado Libre
+
+El usuario indica que todavía no tiene cuenta y solicita avanzar con todo el resto.
+Esta entrega implementa la parte local utilizable y las pruebas controladas, sin OAuth,
+credenciales, consultas ni escrituras remotas. Toda cuenta/publicación capturada es una
+referencia local; simular nunca equivale a publicar ni verificar Mercado Libre.
+Las cláusulas que requieren cuenta/contrato externo permanecen diferidas, no cumplidas.
+No se envía correo: se prepara un aviso descargable con destinatario explícito.
+Reglas de precios, moneda, unidades, depósitos, márgenes y mínimos se ingresan explícitamente.
+Política local versionada y confirmada: reservar al registrar, descontar al despachar,
+cancelar solo reservas y reponer únicamente devoluciones recibidas confirmadas.
+Los eventos de prueba/locales no se presentan como ventas consultadas a Mercado Libre.
+Full solo admite capturas observadas identificadas como manuales; ajustes/ventas locales
+no modifican su cantidad. Las asignaciones comparten una única existencia física.
+
+## Requisitos de esta entrega local
+
+- **LFR-001**: Consolidar evidencia local de listas pendientes, mínimos explícitos, Full desconocido, diferencias y fallos del simulador con origen, gravedad, fechas y ciclo.
+- **LFR-002**: Reconocer sin resolver la causa; cerrar por recuperación observada y reabrir al reaparecer. Consultar repetidamente no duplica alertas.
+- **LFR-003**: Preparar avisos descargables .eml con destinatario explícito y deduplicación por alerta/ciclo/destinatario; nunca enviar ni declarar entrega.
+- **LFR-004**: Auditar por cuenta/recurso/acción/estado/fechas con paginación; exportar el estado local y propuestas históricas con origen y fecha, sin releer Excel ni declarar sincronización.
 
 ## User Scenarios & Testing
 
@@ -61,7 +83,7 @@ Como operador quiero elegir avisos y reintentar sin ejecutar acciones duplicadas
 ## Assumptions and Dependencies
 
 - Depende de004/005/006 para alertas de integración; puede mostrar pendientes de listas antes.
-- No implementada. Faltan destinatarios, servicio de correo, mínimos comerciales y política de retención para activación.
+- Transporte de correo no implementado. Faltan servicio, prueba de entrega y política de retención; destinatarios y mínimos locales se ingresan explícitamente.
 
 ## Condiciones previas a implementación
 

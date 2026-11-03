@@ -285,6 +285,22 @@ form[aria-busy=true] { opacity: .65; cursor: progress; }
 .extra-mapping > summary { font-size: .8rem; font-weight: 400; color: #62718a; }
 /* Supplier-list management uses the same workspace controls and typography. */
 .supplier-setup { align-items: start; }
+.ops-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+.ops-form-grid > .panel { margin-top: 20px; }
+.ops-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; margin: 16px 0; align-items: end; }
+.ops-form label { display: flex; flex-direction: column-reverse; gap: 7px; min-width: 0; margin: 0; }
+.ops-form input, .ops-form select { min-width: 0; max-width: 100%; width: 100%; }
+.ops-form .ops-check { grid-column: 1 / -1; flex-direction: row; align-items: start; line-height: 1.5; }
+.ops-form .ops-check input { width: 18px; height: 18px; flex-shrink: 0; margin-top: 3px; }
+.ops-form > button { grid-column: 1 / -1; justify-self: start; }
+.ops-pagination { display: flex; justify-content: end; align-items: center; gap: 12px; padding: 12px 0 22px; font-size: .8rem; flex-wrap: wrap; }
+.ops-pagination span { margin-right: auto; }
+#local-views, #local-views .view, #local-views .panel { min-width: 0; }
+#local-views td { max-width: 330px; overflow-wrap: anywhere; white-space: normal; }
+#local-views .empty-state { margin: 12px 0 28px; }
+.sidebar nav { min-height: 0; overflow-y: auto; }
+@media (max-width: 1000px) { .ops-form-grid { grid-template-columns: 1fr; gap: 0; } }
+@media (max-width: 700px) { .ops-form { grid-template-columns: 1fr; } .sidebar nav { overflow-y: hidden; } }
 .supplier-setup .panel { margin-top: 0; }
 .supplier-setup form > button { margin-top: 20px; }
 .supplier-setup .split { gap: 16px; }

@@ -2,8 +2,30 @@
 
 **Feature Directory**: `specs/005-precios-verificados`
 **Created**: 2026-11-03
-**Status**: Especificada; no implementada; plan técnico posterior
+**Status**: Parte local implementada y verificada; integración externa diferida por el usuario
 **Input**: Continuar los specs faltantes del sistema ampliable de listas y Mercado Libre.
+
+## Clarifications — continuación sin cuenta Mercado Libre
+
+El usuario indica que todavía no tiene cuenta y solicita avanzar con todo el resto.
+Esta entrega implementa la parte local utilizable y las pruebas controladas, sin OAuth,
+credenciales, consultas ni escrituras remotas. Toda cuenta/publicación capturada es una
+referencia local; simular nunca equivale a publicar ni verificar Mercado Libre.
+Las cláusulas que requieren cuenta/contrato externo permanecen diferidas, no cumplidas.
+No se envía correo: se prepara un aviso descargable con destinatario explícito.
+Reglas de precios, moneda, unidades, depósitos, márgenes y mínimos se ingresan explícitamente.
+Política local versionada y confirmada: reservar al registrar, descontar al despachar,
+cancelar solo reservas y reponer únicamente devoluciones recibidas confirmadas.
+Los eventos de prueba/locales no se presentan como ventas consultadas a Mercado Libre.
+Full solo admite capturas observadas identificadas como manuales; ajustes/ventas locales
+no modifican su cantidad. Las asignaciones comparten una única existencia física.
+
+## Requisitos de esta entrega local
+
+- **LFR-001**: Confirmar por cuenta/alcance una regla base × multiplicador + cargo y decimales explícitos; bloquear moneda o significado incompatibles.
+- **LFR-002**: Conservar propuestas con versión vigente, regla, captura y vínculos exactos; cualquier cambio posterior impide sobrescribir la captura anterior.
+- **LFR-003**: Ejecutar solo en el simulador, con confirmación explícita, causas e intentos visibles. Aceptación sin cambio comprobado queda incierta; ningún resultado tiene verificación remota.
+- **LFR-004**: Reconciliar resultados inciertos antes de repetir, limitar intentos manuales a tres y permitir cancelar propuestas sin intentos; un conflicto exige otra propuesta.
 
 ## User Scenarios & Testing
 
@@ -60,7 +82,7 @@ Como operador quiero conocer el resultado de cada cambio y recuperar errores.
 
 ## Assumptions and Dependencies
 
-- Requiere003/004. No implementada; escrituras dependen de capacidades reales y reglas comerciales definidas por el operador.
+- Requiere003/004. Escrituras remotas no implementadas; dependen de capacidades reales y reglas comerciales definidas por el operador.
 - Sin precio de venta predeterminado, tarifas supuestas ni credenciales de producción en pruebas.
 
 ## Condiciones previas a implementación

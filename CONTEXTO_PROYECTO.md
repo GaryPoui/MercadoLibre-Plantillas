@@ -1,5 +1,10 @@
 # Contexto del proyecto MercadoLibre-Plantillas
 
+Estado al 2026-11-03: 001–003 implementadas; partes locales004–007 implementadas y
+verificadas. El usuario no tiene cuentaML y autoriza avanzar sin conexión externa.
+Ver [operación local](docs/OPERACION_LOCAL.md), [hoja de ruta](docs/HOJA_DE_RUTA.md)
+y [memoria vigente](docs/memory/INDEX.md). El resto de este documento conserva contexto histórico.
+
 Actualizado: 14 de octubre de 2026.
 Fuente leída: https://chatgpt.com/share/6acfcefd-0afc-83e8-a5c2-25ed84c8181a ("Investigar API Mercado Libre").
 El usuario pidió leer ese chat e incorporar su contexto. Este archivo conserva el resumen para futuras sesiones del proyecto.

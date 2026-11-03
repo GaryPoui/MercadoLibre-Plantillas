@@ -1,5 +1,10 @@
 # Alcance y decisiones principales
 
+Ampliación2026-11-03: operación local004–007 autorizada mientras falta cuentaML.
+Catálogo/vínculos, precios simulados, inventario/ventas manuales y alertas/auditoría
+disponibles; conexión/verificación remotas y envío de correo pendientes. Ver
+[operación local](OPERACION_LOCAL.md) y [validación](VALIDACION_OPERACION_LOCAL.md).
+
 ## Confirmado por el usuario
 
 Listas Excel, varias cuentas vendedoras, inventario propio y Mercado Libre Full,

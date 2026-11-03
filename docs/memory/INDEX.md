@@ -1,10 +1,11 @@
 # Memoria del proyecto
 
 Leer solo este índice al retomar; abrir una nota si su tema es relevante.
-Estado: proveedores, alcances y listas vigentes con comparación, activación e historial.
-Revalidado: 89tests y Chrome aprobados; referencias privadas ausentes.
-Rama: `codex/mvp-excel`. Activa local: `specs/003-proveedores-listas-vigentes`.
-Siguiente:004 cuentas/catálogo; verificar documentación y requisitos de app/cuentas.
+Estado: 001–003 y partes locales004–007 implementadas; catálogo/precios/inventario/ventas/alertas.
+Revalidado: 117tests y dos recorridos Chrome aprobados; referencias privadas ausentes.
+Rama: `codex/mvp-excel`. Activa local: `specs/007-alertas-operacion`.
+Usuario sin cuentaML: conexión remota y correo real diferidos; solo simulación/operación local.
+Siguiente: validar listas reales; conectar ML al disponer de app/cuentas y contratos verificados.
 Datos reales: `data/private/`, jamás commitear. Sin escrituras Mercado Libre.
 
 | Hito | Nota | Resultado |
@@ -18,6 +19,7 @@ Datos reales: `data/private/`, jamás commitear. Sin escrituras Mercado Libre.
 | 006 | [Lista unificada](006-standardized.md) | SKU/precio comunes, origen y pendientes conservados |
 | 007 | [Panel y roadmap](007-panel-roadmap.md) | Nuevo diseño, carga guiada y cinco specs futuros |
 | 008 | [Proveedores](008-suppliers.md) | Listas vigentes, comparación y restauración verificadas |
+| 009 | [Operación local](009-offline-operations.md) | Catálogo, simulador, inventario/ventas, alertas, avisos preparados y auditoría |
 
 Formato: una nota de hasta 120 palabras por hito, decisión/validación/siguiente.
 El commit que contiene cada nota es su referencia: `git log -- docs/memory/000-base.md`.

@@ -24,6 +24,7 @@ from . import engine
 from .store import Store, Conflict, default_directory
 from .standardize import consolidate, export_standardized
 from .suppliers import Suppliers, Missing, export_version
+from .local_api import install_local_api
 
 MAX_BODY = 12 * 1024 * 1024
 MAX_FILE = 10 * 1024 * 1024
@@ -555,6 +556,7 @@ def create_app(data_dir: Path | None = None):
         return FileResponse(STATIC / "index.html")
 
     STATIC.mkdir(parents=True, exist_ok=True)
+    install_local_api(app, store, require_session)
     app.mount("/static", StaticFiles(directory=STATIC), name="static")
     return app
 

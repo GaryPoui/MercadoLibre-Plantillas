@@ -2,8 +2,30 @@
 
 **Feature Directory**: `specs/004-cuentas-catalogo-ml`
 **Created**: 2026-11-03
-**Status**: Especificada; no implementada; plan técnico posterior
+**Status**: Parte local implementada y verificada; integración externa diferida por el usuario
 **Input**: Continuar los specs faltantes del sistema ampliable de listas y Mercado Libre.
+
+## Clarifications — continuación sin cuenta Mercado Libre
+
+El usuario indica que todavía no tiene cuenta y solicita avanzar con todo el resto.
+Esta entrega implementa la parte local utilizable y las pruebas controladas, sin OAuth,
+credenciales, consultas ni escrituras remotas. Toda cuenta/publicación capturada es una
+referencia local; simular nunca equivale a publicar ni verificar Mercado Libre.
+Las cláusulas que requieren cuenta/contrato externo permanecen diferidas, no cumplidas.
+No se envía correo: se prepara un aviso descargable con destinatario explícito.
+Reglas de precios, moneda, unidades, depósitos, márgenes y mínimos se ingresan explícitamente.
+Política local versionada y confirmada: reservar al registrar, descontar al despachar,
+cancelar solo reservas y reponer únicamente devoluciones recibidas confirmadas.
+Los eventos de prueba/locales no se presentan como ventas consultadas a Mercado Libre.
+Full solo admite capturas observadas identificadas como manuales; ajustes/ventas locales
+no modifican su cantidad. Las asignaciones comparten una única existencia física.
+
+## Requisitos de esta entrega local
+
+- **LFR-001**: Registrar referencias habilitables de cuenta sin credenciales ni afirmar conexión.
+- **LFR-002**: Mantener productos internos con SKU y unidad declarados; capturas manuales por cuenta/publicación/variante con historial y capacidad remota desconocida.
+- **LFR-003**: Confirmar explícitamente producto↔publicación y producto↔SKU de un alcance vigente. No inferir equivalencia; retirar vínculos conserva historia y bloquea propuestas dependientes.
+- **LFR-004**: Autenticar el acceso, proteger mutaciones y detectar revisiones concurrentes. La comparación controlada anterior sigue identificada como prueba.
 
 ## User Scenarios & Testing
 
@@ -60,8 +82,8 @@ Como operador quiero vincular un producto interno con los destinos exactos de un
 
 ## Assumptions and Dependencies
 
-- Requiere003 para identidades de proveedor estables. No implementada; falta app registrada, cuentas autorizadas y configuración de retorno admitida.
-- Antes del plan técnico verificar documentación oficial vigente y capacidades reales; no inferirlas de catálogos sintéticos.
+- Requiere003 para identidades de proveedor estables. Integración remota no implementada: falta app registrada, cuentas autorizadas y configuración de retorno admitida.
+- Antes del plan técnico de integración verificar documentación oficial vigente y capacidades reales; no inferirlas de catálogos sintéticos.
 
 ## Condiciones previas a implementación
 
