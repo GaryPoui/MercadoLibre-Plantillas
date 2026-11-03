@@ -1,7 +1,7 @@
 # Memoria del proyecto
 
 Leer solo este índice al retomar; abrir una nota si su tema es relevante.
-Estado: motor verificado; integración API/panel en comprobación.
+Estado: MVP local implementado y probado; cerrando guía y entrega.
 Rama: `codex/mvp-excel`. Activa: `specs/001-importacion-excel`.
 Siguiente: ejecutar tareas del plan y verificar por hitos.
 Datos reales: `data/private/`, jamás commitear. Sin escrituras Mercado Libre.
@@ -11,6 +11,7 @@ Datos reales: `data/private/`, jamás commitear. Sin escrituras Mercado Libre.
 | 000 | [Base](000-base.md) | Preparación, delegación y persistencia compacta |
 | 001 | [Diseño](001-design.md) | Contratos y18 tareas; sin bloqueos críticos |
 | 002 | [Motor](002-engine.md) | 52tests y9casos privados; exportación determinista |
+| 003 | [Aplicación](003-app.md) | API/panel;66tests y recorrido navegador completo |
 
 Formato: una nota de hasta 120 palabras por hito, decisión/validación/siguiente.
 El commit que contiene cada nota es su referencia: `git log -- docs/memory/000-base.md`.
