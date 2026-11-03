@@ -1,14 +1,15 @@
 # Memoria del proyecto
 
 Leer solo este índice al retomar; abrir una nota si su tema es relevante.
-Estado: autorización de implementación y push; fase de diseño del MVP Excel.
+Estado: diseño/tareas analizados; implementación del motor/API/panel.
 Rama: `codex/mvp-excel`. Activa: `specs/001-importacion-excel`.
-Siguiente: plan → tareas → análisis → implementación → pruebas.
+Siguiente: ejecutar tareas del plan y verificar por hitos.
 Datos reales: `data/private/`, jamás commitear. Sin escrituras Mercado Libre.
 
 | Hito | Nota | Resultado |
 | --- | --- | --- |
 | 000 | [Base](000-base.md) | Preparación, delegación y persistencia compacta |
+| 001 | [Diseño](001-design.md) | Contratos y18 tareas; sin bloqueos críticos |
 
 Formato: una nota de hasta 120 palabras por hito, decisión/validación/siguiente.
 El commit que contiene cada nota es su referencia: `git log -- docs/memory/000-base.md`.

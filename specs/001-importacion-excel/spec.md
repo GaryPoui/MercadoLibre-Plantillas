@@ -10,6 +10,13 @@
 
 ## Clarifications
 
+Autorización posterior: el usuario solicita ejecutar Spec Kit hasta MVP, implementar,
+verificar y subir commits con memoria por hito. Sustituye las restricciones históricas
+de no escribir aplicación. MVP de esta especificación: conversión/revisión local,
+comparación con catálogo controlado y exportación de valores certificados con informe.
+La revisión conserva fórmula y resultado histórico; no se promete reproducción exacta
+de estilos ni fórmulas activas en la descarga. Integración real ML es entrega posterior.
+
 ### Session 2026-11-02
 
 - Decisión explícita: usar las planillas ya entregadas; los originales de proveedores llegarán después y ampliarán los perfiles, sin bloquear el plan inicial.
@@ -160,6 +167,7 @@ segunda lista compatible y otra incompatible; comprobar alcance e historial.
 - **FR-021**: DEBE mostrar por separado dato ingresado, resultado disponible y presentación cuando difieran de manera relevante, señalando errores de fórmula y referencias rotas detectadas sin recalcular silenciosamente.
 - **FR-022**: DEBE permitir cambiar reglas de cálculo y parámetros por perfil, incluidas bases, secuencias de descuentos, presentaciones, factores, cargos, tramos y redondeos presentes en la referencia, mostrando su alcance y creando versiones sin reescribir resultados históricos.
 - **FR-023**: DEBE exportar exactamente los resultados de la revisión elegida y sus orígenes, sin reinterpretar silenciosamente los archivos al descargar. Los campos con dependencia inválida quedan pendientes, con evidencia e incidencia; no se certifican sus valores históricos como correctos.
+- **FR-024**: DEBE proteger el panel local y sus datos mediante autenticación, sesiones revocables y controles de origen; las importaciones, reglas y revisiones persisten al reiniciar. El modo inicial se limita al equipo local y no se declara despliegue productivo público.
 
 ### Key Entities *(include if feature involves data)*
 
