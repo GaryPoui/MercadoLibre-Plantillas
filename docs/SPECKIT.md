@@ -39,9 +39,18 @@ Se puede pedir el trabajo en lenguaje natural; los nombres ayudan a indicar la f
 
 - Constitución: redactada, versión 1.0.0.
 - Funcionalidad activa: `specs/001-importacion-excel`.
-- Especificación: borrador revisado documentalmente, pendiente de Excel reales.
-- Plan, modelo de datos, contratos finales y tareas: se generarán después del análisis.
+- Especificación: borrador ampliado el 2026-11-02 tras perfilar una referencia de 17 pestañas;
+  aclarado para plan v0.1 por delegación del usuario, con casos de referencia y reglas
+  modificables. La llegada de originales de proveedores deja de bloquear ese plan.
+- Plan inicial: siguiente fase con la base y casos preparados. Contratos de nuevos
+  proveedores e integración externa se ampliarán con sus evidencias; aún no hay tareas finales.
 - Implementación y conexión a Mercado Libre: aún no iniciadas.
+
+La referencia local `.specify/feature.json` faltaba al comenzar esta revisión y se
+restableció mediante `Save-FeatureJson`, función oficial de los scripts existentes.
+Se comprobó su resolución con `check-prerequisites.ps1 -Json -PathsOnly` y la plantilla
+con `resolve-template.ps1`. No se modificaron scripts ni plantillas oficiales.
+El archivo de referencia local sigue excluido de Git por la configuración de Spec Kit.
 
 La carpeta de funcionalidad se guarda en `.specify/feature.json`. Esta versión no requiere
 una rama con el mismo nombre. No se instaló la extensión Git: se utiliza Git normal y

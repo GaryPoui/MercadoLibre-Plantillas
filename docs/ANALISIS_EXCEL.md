@@ -1,7 +1,13 @@
 # Guía para analizar los Excel del usuario
 
-Estado: pendiente de recibir archivos. No asumir que el diseño ilustrativo del chat
-coincide con los documentos reales.
+Estado al 2026-11-02: referencia Google Sheets de 17 pestañas recibida y perfilada en
+lectura; ver [hallazgos](REFERENCIA_EXCEL.md). Pendientes listas originales de proveedores
+y salidas aprobadas. No asumir que una referencia fija un único contrato universal.
+
+El usuario delegó usar estas referencias y decidir la versión inicial sin nuevas
+respuestas. Ver [base v0.1](BASE_INICIAL_V0.md) y [casos](CASOS_REFERENCIA_V0.md).
+Las listas originales futuras amplían perfiles; no bloquean el plan del conversor
+inicial. Los parámetros observados se usan como referencia editable y versionada.
 
 ## Método
 
@@ -23,6 +29,23 @@ coincide con los documentos reales.
    Preguntar únicamente por significados que no se puedan resolver con evidencias.
 9. Actualizar `specs/001-importacion-excel/spec.md`, su checklist y el alcance.
    Después elaborar el plan técnico y las tareas.
+
+Para Google Sheets, conservar metadatos y snapshots API privados, indicando rangos y
+campos consultados. No describirlos como originales Excel ni atribuirles una huella
+del archivo remoto. Distinguir valor ingresado, efectivo y mostrado. La cuadrícula
+asignada no equivale al rango de productos y una lectura no constituye una revisión
+atómica de todo el libro. Registrar lo no expuesto (ocultas, combinadas, validaciones).
+
+## Conversión y correcciones
+
+- Comparar una lista original con una salida aprobada; acordar qué incluye la similitud.
+- Mantener perfiles por proveedor/estructura y plantillas de salida con versiones.
+- Registrar si una corrección afecta una fila, una regla o la plantilla; no generalizarla
+  a otros proveedores o al historial sin confirmación.
+- Construir casos anonimizados con pérdida de ceros, encabezados múltiples, códigos
+  compuestos, referencia rota atrapada, diferencias de formato numérico y cambio de estructura.
+- Comprobar la salida reabriéndola y contrastando columnas, identidad, filas y reglas
+  representativas antes de declarar conversión correcta.
 
 ## Registro esperado por archivo
 

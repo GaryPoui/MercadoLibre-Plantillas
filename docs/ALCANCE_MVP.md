@@ -3,15 +3,20 @@
 ## Confirmado por el usuario
 
 Listas Excel, varias cuentas vendedoras, inventario propio y Mercado Libre Full,
-sincronización bidireccional con reglas de conflicto. Los Excel reales se entregarán
-después de preparar el proyecto y determinarán la base de trabajo.
+sincronización bidireccional con reglas de conflicto. El 2026-11-02 se aportó una
+referencia Google Sheets de 17 pestañas y se añadió conversión de listas de proveedores
+a formatos similares, con retroalimentación mediante futuras cargas y correcciones.
+Faltan listas originales, pero el usuario delegó avanzar con las referencias existentes,
+preparar casos y basar las reglas en las planillas con cambios posteriores. La base
+inicial está en [BASE_INICIAL_V0.md](BASE_INICIAL_V0.md); la etapa continúa sin código.
 
 ## MVP de referencia
 
 | Área | Resultado esperado |
 | --- | --- |
 | Cuentas | Conexión, lectura y credenciales separadas por vendedor |
-| Excel | Mapeo, validación, diferencias y exportación actualizada |
+| Excel | Conversión a plantillas versionadas, mapeo, validación, diferencias y exportación |
+| Correcciones | Perfiles por proveedor/formato e historial de reglas confirmadas |
 | Catálogo | Productos internos y vínculos a publicaciones/variaciones por cuenta |
 | Precios | Cambios válidos, restricciones visibles y resultado remoto verificado |
 | Stock | Propio y Full separados; inventario físico compartido sin duplicación |
@@ -45,7 +50,7 @@ previo; no se instalaron estas dependencias ni se creó una aplicación en esta 
 
 ## Secuencia de especificaciones
 
-1. `001-importacion-excel`: interpretar archivos y revisar diferencias (borrador existente).
+1. `001-importacion-excel`: interpretar, convertir, revisar y exportar sin cuentas conectadas; perfiles y correcciones con alcance explícito (borrador ampliado).
 2. Conexión de cuentas y lectura de catálogo: OAuth y vínculos por vendedor.
 3. Aplicación y verificación de precios: conflictos, restricciones y reintentos.
 4. Inventario compartido, Full y ventas: eventos, reservas y conciliación.
@@ -54,9 +59,14 @@ previo; no se instalaron estas dependencias ni se creó una aplicación en esta 
 La numeración posterior es orientativa; crear cada especificación cuando su alcance esté
 definido. La conexión/lectura de catálogo precederá a las pruebas de comparación real.
 
-## Pendientes antes del plan del importador
+## Base inicial y pendientes de ampliación
 
-- Excel reales: hojas, encabezados, ejemplos, fórmulas y formatos.
+La base v0.1 y sus nueve casos permiten planificar el conversor de referencia ahora.
+Los puntos siguientes se contrastarán al ampliar perfiles y preparar integración/uso
+productivo; no exigen respuestas adicionales para el plan inicial delegado.
+
+- Parejas de Excel originales de proveedores y salidas aprobadas; la referencia ya fue perfilada, ver [análisis](REFERENCIA_EXCEL.md).
+- Plantilla(s) elegidas, alcance de semejanza y reglas de reutilización de correcciones.
 - Identidad del producto y relación entre códigos internos, proveedores y publicaciones.
 - Significado de costos/precios, moneda, impuestos, descuentos y redondeos.
 - Significado de cantidades, depósitos, unidades y stock compartido.
@@ -64,3 +74,6 @@ definido. La conexión/lectura de catálogo precederá a las pruebas de comparac
 
 Los permisos y endpoints de Mercado Libre deben verificarse en fuentes oficiales antes
 de su implementación. No hay cuentas conectadas ni escrituras remotas realizadas.
+
+El [replanteamiento](REPLANTEAMIENTO_BASE.md) documenta prioridades, propuestas y
+pendientes. No se traslada una fórmula observada al producto como regla comercial aprobada.

@@ -82,3 +82,81 @@ Validar al menos dos cuentas con credenciales separadas; archivos con errores/du
 ## Estado al incorporar este contexto
 
 El chat contiene investigación y diseño, no evidencia de un sistema desarrollado. No aporta credenciales, identificadores reales de cuentas, Excel de ejemplo ni despliegue. Quedan por definir los archivos reales, depósitos/cuentas, reglas comerciales, alertas, alojamiento y capacidades habilitadas. La solicitud actual solo autoriza incorporar contexto; no implica ejecutar todas las propuestas del chat.
+
+## Ampliación confirmada el 2 de noviembre de 2026
+
+El usuario solicita leer el planteamiento, investigar profundamente habilidades de
+desarrollo/análisis y diseño web, instalarlas, usar subagentes y replantear la base.
+Prohíbe por ahora escribir código de la aplicación. La preparación documental y las
+habilidades sí están autorizadas.
+
+Aporta como referencia el libro Google Sheets identificado en el informe privado
+`data/private/ANALISIS_MISTICA.md`, con 17 pestañas. La nueva necesidad es convertir
+futuras listas de proveedores a formatos similares a los ejemplos y retroalimentar
+el sistema con cargas y correcciones. Se propone materializarlo en perfiles y reglas
+confirmadas con historial, no en aprendizaje automático indiscriminado.
+
+Se leyeron las cuadrículas completas a través del conector; snapshots y fórmulas reales
+quedan en `data/private/`. No se modificó la referencia, no se convirtieron listas y
+no se conectaron cuentas. Aún falta definir salidas aprobadas y reglas comerciales.
+
+El resumen histórico anterior se mantiene como tal: el enlace remoto no volvió a
+cargar durante esta revisión. Las páginas oficiales de precios/stock de Mercado Libre
+devolvieron 403; no se consideran verificadas sus capacidades vigentes.
+
+Continuar desde `docs/REPLANTEAMIENTO_BASE.md`, `docs/REFERENCIA_EXCEL.md`,
+`docs/HABILIDADES.md` y la especificación activa ampliada. El stack sigue pendiente
+del plan. La siguiente fase será aclarar el contrato con casos entrada/salida reales;
+la implementación continúa sin iniciar.
+
+## Investigación de sistemas similares, 2 de noviembre de 2026
+
+El usuario aporta `https://github.com/GaryPoui/AnalizadorPlanillas.git` como referencia
+de funciones similares y aclara que este desarrollo será diferente. Solicita analizar
+también otros sistemas y sumar documentación para mejorar los specs posteriores.
+Esto autoriza investigación y documentación, no modificar el ejemplo ni implementar.
+
+Se revisó estáticamente AnalizadorPlanillas en el commit
+`6fd377c6e959feaa5c7e4c3c06354bd164ff6295`, con evidencia de backend, interfaz y
+pruebas seleccionadas; no se ejecutó. Se investigaron fuentes oficiales de OpenRefine,
+Flatfile, Dromo, Akeneo PIM, Odoo y Real Trends sin probar sus servicios ni subir datos.
+
+La síntesis y matriz de insumos está en `docs/SISTEMAS_REFERENCIA.md`; las fichas están
+en `docs/referencias/`. Distinguir declarado, observado en código, propuesto y probado.
+La investigación no convierte funciones ajenas en requisitos aprobados ni adopta las
+12 columnas, reglas comerciales, stack o IA del ejemplo. Se proponen casos sobre
+exportar exactamente lo revisado, alcance de correcciones, calidad frente a cobertura,
+filas excluidas, identidad y compatibilidad de perfiles. El contrato sigue abierto.
+
+## Decisiones delegadas para avanzar con las referencias, 2 de noviembre de 2026
+
+El usuario indicó: usar las planillas ya entregadas; recibir después originales de
+proveedores; preparar los casos de resultado esperado; basar las reglas en los Excel
+con posibilidad de modificarlas; tomar estas decisiones sin esperar más respuestas.
+
+Se adopta `docs/BASE_INICIAL_V0.md` como contrato inicial de referencia para planificar,
+no como contrato definitivo de todos los proveedores. Se prepararon nueve casos y dos
+filas detalladas de entrada/salida del perfil simple; valores y fórmulas comerciales
+están en `data/private/base-inicial/`. Índice anonimizado: `docs/CASOS_REFERENCIA_V0.md`.
+Los cálculos seleccionados se contrastaron aritméticamente sin ejecutar fórmulas Excel.
+
+Se decidió iniciar por AD y mantener perfiles separados para otras estructuras,
+salida XLSX e informe, cálculos/formatos editables y versionados, corrección local por
+defecto y reutilización de mapeos compatibles. Las fórmulas rotas y datos ambiguos
+quedan pendientes, sin inventar valores. Los parámetros observados son una referencia
+histórica configurable, no tarifas vigentes ni autorización para publicar.
+
+Esta instrucción explícita sustituye el bloqueo anterior de esperar nuevas listas o
+aprobación manual de cada decisión para planificar. Se aplica la prioridad del usuario
+prevista en la constitución; no se declara compatibilidad con archivos no recibidos ni
+preparación para producción. Se mantiene la restricción de no implementar aplicación.
+La siguiente fase permitida es el plan inicial con Spec Kit.
+
+## Autorización de implementación y persistencia por hitos
+
+El usuario solicita ejecutar Spec Kit hasta un MVP y crear memoria, commit y push por
+avance. Esta instrucción revoca la restricción previa de no escribir aplicación.
+Se empieza por el MVP de la especificación activa: conversor/revisor Excel autónomo.
+Las integraciones reales de precios/stock/ventas se mantienen como siguientes entregas,
+sin afirmar cuentas conectadas ni habilitar escrituras con capacidades desconocidas.
+Memoria compacta: `docs/memory/INDEX.md`; notas por hito, hasta120 palabras, sin datos.
