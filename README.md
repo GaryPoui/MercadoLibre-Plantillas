@@ -39,6 +39,27 @@ La sesión, los originales y las revisiones nunca se guardan en Git.
 5. Descargar la revisión XLSX: hojas Datos e Informe, valores calculados y pendientes
    explícitos, sin volver a procesar el original. Consultar versiones anteriores en Historial.
 
+## Unificar listas de proveedores
+
+Al cargar una lista, se sugieren las columnas SKU y precio cuando sus encabezados
+son inequívocos. Confirmá las correspondencias, indicá el proveedor y creá la revisión.
+Los encabezados ambiguos requieren selección; costo no se considera precio automáticamente.
+Podés guardar el perfil para repetir el mapeo con listas compatibles.
+
+En **Lista unificada** aparecen los productos de la última revisión de cada carga con
+las mismas columnas: SKU, precio, descripción, proveedor y procedencia. Buscá por SKU,
+proveedor o archivo, filtrá por estado y descargá el conjunto completo en XLSX.
+La descarga incluye también pendientes e incidencias, además del informe.
+
+Un precio cero es válido; ausencia o precio inválido queda pendiente. Los códigos
+repetidos para el mismo proveedor conservan todas sus alternativas y quedan pendientes,
+sin seleccionar un precio ganador. El mismo código en proveedores distintos conserva
+identidades separadas. No se convierten monedas ni se calculan impuestos por defecto.
+Las cargas sin revisión se cuentan, pero sus datos todavía no forman parte del conjunto.
+Una corrección sustituye esa revisión en la lista común y conserva el historial original.
+Cada carga aporta su última hoja revisada; para incluir varias hojas de un libro,
+creá una carga independiente por hoja y revisá cada una.
+
 Las hojas de tareas o métricas se pueden clasificar como operativas. La comparación
 usa exclusivamente el catálogo controlado guardado en este equipo y nunca publica.
 Formatos iniciales: XLSX y CSV UTF-8; no XLS, XLSM, PDF ni macros. Las fórmulas fuera

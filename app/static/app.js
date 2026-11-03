@@ -1,7 +1,7 @@
 'use strict';
 const $ = id => document.getElementById(id);
 const state = { csrf: '', configured: false, imported: null, review: null, profiles: [], page: 1, config: {} };
-const roles = { code: 'Código de producto', description: 'Descripción', base: 'Valor base', listing: 'Publicación', quantity: 'Cantidad', logistics: 'Logística' };
+const roles = { code: 'SKU / código de producto', description: 'Descripción', base: 'Precio de la lista', listing: 'Publicación', quantity: 'Cantidad', logistics: 'Logística' };
 const labels = { usable: 'Utilizable', pending: 'Pendiente', rejected: 'Rechazada', context: 'Contexto', empty: 'Vacía' };
 const comparisonLabels = { ready: 'Propuesta local', unlinked: 'Sin vínculo', ambiguous: 'Vínculo ambiguo', full: 'Full: solo lectura', unverified: 'Capacidad no verificada', invalid: 'Datos pendientes' };
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -35,11 +35,12 @@ async function authStatus() {
   return result.authenticated;
 }
 async function navigate() {
-  let view = location.hash.slice(1).split('?')[0] || 'work'; if (!['work', 'history', 'profiles', 'catalog'].includes(view)) view = 'work';
+  let view = location.hash.slice(1).split('?')[0] || 'work'; if (!['work', 'unified', 'history', 'profiles', 'catalog'].includes(view)) view = 'work';
   document.querySelectorAll('.view').forEach(node => node.hidden = node.id !== `view-${view}`);
   document.querySelectorAll('[data-view]').forEach(node => node.dataset.view === view ? node.setAttribute('aria-current', 'page') : node.removeAttribute('aria-current'));
   if ($('shell').hidden) return;
   if (view === 'history') await loadHistory();
+  if (view === 'unified') await loadUnified();
   if (view === 'profiles') await loadProfiles();
   if (view === 'catalog') await loadCatalog();
 }
@@ -69,14 +70,16 @@ function getConfig() {
   const mapping = {}; document.querySelectorAll('[data-role]').forEach(select => { if (select.value) mapping[select.dataset.role] = select.value; });
   const config = { ...state.config, sheet: $('sheet').value, sheet_kind: $('sheet-kind').value, header_rows: headers, data_start: Number($('data-start').value), mapping, parameters: collectRules('parameter-rows'), formulas: collectRules('formula-rows') };
   const profile = state.profiles.find(item => String(item.id ?? item.version_id) === $('profile-select').value);
-  if (profile) { config.profile_version_id = profile.id ?? profile.version_id; config.supplier = profile.supplier; }
-  else { delete config.profile_version_id; delete config.supplier; delete config._schema; }
+  if (profile) { config.profile_version_id = profile.id ?? profile.version_id; config.supplier = $('source-supplier').value.trim(); }
+  else { delete config.profile_version_id; config.supplier = $('source-supplier').value.trim(); delete config._schema; }
   const parent = state.review?.id ?? state.imported?.latest_review_id;
   if (parent) config.parent_id = parent; else delete config.parent_id;
   return config;
 }
 function setConfig(config) {
   state.config = structuredClone(config ?? {});
+  $('source-supplier').value = config.supplier ?? '';
+  $('mapping-note').textContent = '';
   if (config.sheet && state.imported?.sheets?.some(sheet => sheet.name === config.sheet)) $('sheet').value = config.sheet;
   $('header-rows').value = (config.header_rows ?? [1]).join(', '); $('data-start').value = config.data_start ?? 2; $('sheet-kind').value = config.sheet_kind ?? 'catalog';
   renderColumns(config.mapping ?? {}); $('parameter-rows').replaceChildren(); $('formula-rows').replaceChildren();
@@ -90,6 +93,7 @@ function openImport(imported) {
   $('filename').textContent = imported.filename ?? 'Archivo cargado'; $('duplicate').textContent = imported.duplicate_of ? 'Archivo repetido: original conservado' : 'Archivo recibido';
   $('sheet').innerHTML = (imported.sheets ?? []).map(sheet => `<option value="${esc(sheet.name)}">${esc(sheet.name)} · ${nfmt(Number(sheet.rows ?? 0))} filas</option>`).join('');
   setConfig({ sheet: imported.sheets?.[0]?.name ?? '', header_rows: [1], data_start: 2, mapping: {}, parameters: {}, formulas: {} });
+  suggestMapping();
 }
 function renderReview(review) {
   state.review = review; state.page = 1; $('review-panel').hidden = false;
@@ -155,10 +159,10 @@ function drawComparison(result) {
   $('comparison').innerHTML = `<p>${nfmt(differences.length)} resultados para la cuenta elegida. Ninguno se envía a Mercado Libre.</p><div class="table-wrap comparison-table" tabindex="0"><table><caption class="sr-only">Comparación con catálogo controlado</caption><thead><tr><th scope="col">Fila / código</th><th scope="col">Publicación</th><th scope="col">Precio previo / propuesto</th><th scope="col">Cantidad previa / propuesta</th><th scope="col">Estado y motivos</th></tr></thead><tbody>${differences.map(item => `<tr><td>${esc(item.row_number)} · ${esc(item.product_key)}</td><td>${esc(item.listing_id)}</td><td>${esc(display(item.current_price))} / ${esc(display(item.proposed_price))}</td><td>${esc(display(item.current_quantity))} / ${esc(display(item.proposed_quantity))}</td><td>${esc(comparisonLabels[item.status] ?? item.status)}${item.blocked ? ' · Bloqueado' : ' · Solo propuesta local'}${(item.reasons ?? []).map(reason => `<span class="issue">${esc(reason)}</span>`).join('')}</td></tr>`).join('')}</tbody></table></div>`;
 }
 $('auth-form').addEventListener('submit', run(async () => { await api(`/api/auth/${state.configured ? 'login' : 'setup'}`, { method: 'POST', body: { password: $('password').value } }); $('password').value = ''; if (await authStatus()) { await loadProfiles(); await navigate(); } }));
-$('logout').onclick = run(async () => { await api('/api/auth/logout', { method: 'POST' }); state.imported = null; state.review = null; $('workspace').hidden = true; $('history-list').replaceChildren(); $('history-reviews').replaceChildren(); $('catalog-json').value = '[]'; await authStatus(); });
+$('logout').onclick = run(async () => { await api('/api/auth/logout', { method: 'POST' }); state.imported = null; state.review = null; unifiedRows = []; $('unified-table').replaceChildren(); $('unified-summary').replaceChildren(); $('workspace').hidden = true; $('history-list').replaceChildren(); $('history-reviews').replaceChildren(); $('catalog-json').value = '[]'; await authStatus(); });
 $('upload-form').addEventListener('submit', run(async () => { const file = $('file').files[0]; if (!file) throw new Error('Elegí un archivo antes de cargar.'); if (file.size > 10 * 1024 * 1024) throw new Error('El archivo supera 10 MiB. Prepará una copia más pequeña.'); const body = new FormData(); body.append('file', file); openImport(await api('/api/imports', { method: 'POST', body })); message('Archivo conservado. Elegí su estructura para crear la revisión.'); }));
-$('sheet').onchange = () => { const mapping = Object.fromEntries([...document.querySelectorAll('[data-role]')].map(select => [select.dataset.role, select.value])); renderColumns(mapping); };
-$('profile-select').onchange = run(async () => { const profile = state.profiles.find(item => String(item.id ?? item.version_id) === $('profile-select').value); if (!profile) return; if (!state.imported) throw new Error('Cargá primero un archivo.'); if (!state.imported.sheets.some(sheet => sheet.name === profile.config.sheet)) throw new Error('El perfil usa una hoja que no existe en esta carga. Revisá su compatibilidad antes de reutilizarlo.'); setConfig(profile.config); $('profile-note').textContent = `Perfil ${profile.name}, versión ${profile.version}; proveedor ${profile.supplier}. Revisá la correspondencia antes de crear la revisión.`; $('profile-name').value = profile.name; $('supplier').value = profile.supplier; });
+$('sheet').onchange = () => { const mapping = Object.fromEntries([...document.querySelectorAll('[data-role]')].map(select => [select.dataset.role, select.value])); renderColumns(mapping); $('mapping-note').textContent = 'Revisá las columnas para esta hoja o pedí una nueva sugerencia.'; };
+$('profile-select').onchange = run(async () => { const profile = state.profiles.find(item => String(item.id ?? item.version_id) === $('profile-select').value); if (!profile) return; if (!state.imported) throw new Error('Cargá primero un archivo.'); if (!state.imported.sheets.some(sheet => sheet.name === profile.config.sheet)) throw new Error('El perfil usa una hoja que no existe en esta carga. Revisá su compatibilidad antes de reutilizarlo.'); setConfig({ ...profile.config, supplier: profile.supplier }); $('profile-note').textContent = `Perfil ${profile.name}, versión ${profile.version}; proveedor ${profile.supplier}. Revisá la correspondencia antes de crear la revisión.`; $('profile-name').value = profile.name; $('supplier').value = profile.supplier; });
 $('add-parameter').onclick = () => ruleRow('parameter'); $('add-formula').onclick = () => ruleRow('formula');
 $('show-json').onclick = run(() => { $('advanced-config').value = JSON.stringify(getConfig(), null, 2); });
 $('load-json').onclick = run(() => { const config = JSON.parse($('advanced-config').value); if (!config || typeof config !== 'object' || Array.isArray(config)) throw new Error('La configuración debe ser un objeto JSON.'); setConfig(config); message('Configuración aplicada al formulario. Revisala antes de crear la revisión.'); });
@@ -173,3 +177,52 @@ $('catalog-form').addEventListener('submit', run(async () => { const entries = J
 $('refresh-history').onclick = run(loadHistory); $('refresh-profiles').onclick = run(loadProfiles); $('refresh-catalog').onclick = run(loadCatalog);
 window.addEventListener('hashchange', run(navigate));
 run(async () => { if (await authStatus()) { await loadProfiles(); await navigate(); } })();
+
+// Suggestions never infer commercial rules or select between competing columns.
+function suggestMapping() {
+  const metadata = sheetMetadata();
+  if (!metadata) return;
+  const headers = $('header-rows').value.split(',').map(n => Number(n.trim()));
+  const aliases = {
+    code: new Set(['sku', 'codigo', 'codigo producto', 'codigo de producto', 'codigo articulo', 'cod articulo', 'cod', 'article code', 'product code']),
+    base: new Set(['precio', 'price', 'precio lista', 'precio de lista', 'precio unitario']),
+    description: new Set(['descripcion', 'producto', 'description', 'nombre']),
+  };
+  const normalize = value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[._-]/g, ' ').trim().replace(/\s+/g, ' ');
+  const notes = [];
+  for (const [role, names] of Object.entries(aliases)) {
+    const matches = [];
+    for (let index = 0; index < metadata.columns; index++) {
+      if (headers.some(row => names.has(normalize(metadata.preview[row - 1]?.[index])))) matches.push(columnName(index));
+    }
+    const select = $(`map-${role}`);
+    select.value = matches.length === 1 ? matches[0] : '';
+    notes.push(`${roles[role]}: ${matches.length === 1 ? matches[0] : matches.length ? 'varias opciones; elegí una' : 'sin coincidencia; elegí la columna'}`);
+  }
+  $('mapping-note').textContent = `Sugerencia para revisar. ${notes.join(' · ')}. Confirmá el significado al crear la revisión; costo no se toma como precio.`;
+}
+$('suggest-mapping').onclick = run(suggestMapping);
+let unifiedRows = [];
+let unifiedPage = 1;
+async function loadUnified() {
+  const result = await api('/api/standardized');
+  unifiedRows = result.rows; unifiedPage = 1;
+  const summary = result.summary;
+  $('unified-summary').innerHTML = [['total', 'Productos'], ['ready', 'Listos'], ['pending', 'Pendientes'], ['unreviewed_imports', 'Cargas sin revisión']].map(([key, label]) => `<div class="summary-item"><strong>${nfmt(summary[key])}</strong><span>${label}</span></div>`).join('');
+  drawUnified();
+}
+function drawUnified() {
+  const search = $('unified-search').value.trim().toLocaleLowerCase('es');
+  const filter = $('unified-filter').value;
+  const rows = unifiedRows.filter(row => (filter === 'all' || row.status === filter) && (!search || [row.sku, row.supplier, row.filename, row.description].some(value => String(value ?? '').toLocaleLowerCase('es').includes(search))));
+  const pages = Math.max(1, Math.ceil(rows.length / 50)); unifiedPage = Math.min(unifiedPage, pages);
+  const selected = rows.slice((unifiedPage - 1) * 50, unifiedPage * 50);
+  $('unified-table').innerHTML = selected.length ? `<table><caption class="sr-only">Lista común de SKU y precios con procedencia</caption><thead><tr><th scope="col">SKU</th><th scope="col">Precio</th><th scope="col">Descripción</th><th scope="col">Proveedor</th><th scope="col">Origen</th><th scope="col">Estado</th><th scope="col">Incidencias</th></tr></thead><tbody>${selected.map(row => `<tr><th scope="row">${esc(display(row.sku))}</th><td>${esc(display(row.price))}</td><td>${esc(display(row.description))}</td><td>${esc(row.supplier || 'Sin identificar')}</td><td>${esc(row.filename)}<br>${esc(row.sheet)} · fila ${esc(row.row_number)}<br><small>Revisión ${esc(row.review_id)}</small></td><td><span class="badge ${row.status === 'ready' ? 'usable' : 'pending'}">${row.status === 'ready' ? 'Listo' : 'Pendiente'}</span></td><td>${row.issues.map(issue => `<span class="issue">${esc(issue)}</span>`).join('') || 'Sin incidencias'}</td></tr>`).join('')}</tbody></table>` : '<p class="empty">No hay productos para mostrar. Cargá una lista, identificá su proveedor y creá una revisión con SKU y precio, o cambiá el filtro.</p>';
+  $('unified-page').textContent = `Página ${nfmt(unifiedPage)} de ${nfmt(pages)} · ${nfmt(rows.length)} productos`;
+  $('unified-prev').disabled = unifiedPage <= 1; $('unified-next').disabled = unifiedPage >= pages;
+}
+$('refresh-unified').onclick = run(loadUnified);
+$('unified-search').oninput = () => { unifiedPage = 1; drawUnified(); };
+$('unified-filter').onchange = () => { unifiedPage = 1; drawUnified(); };
+$('unified-prev').onclick = () => { unifiedPage--; drawUnified(); };
+$('unified-next').onclick = () => { unifiedPage++; drawUnified(); };

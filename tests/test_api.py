@@ -143,3 +143,36 @@ def test_corrections_create_snapshot_and_stale_parent_conflicts(tmp_path):
         assert str(book["Datos"]["A2"].value) == "001-A"
         assert float(book["Datos"]["C2"].value) == 150
         book.close()
+
+
+def test_standardized_requires_auth_and_uses_only_latest_persistent_review(tmp_path):
+    with TestClient(create_app(data_dir=tmp_path)) as client:
+        assert client.get('/api/standardized').status_code == 401
+        assert client.get('/api/standardized/export').status_code == 401
+    with authenticated_client(tmp_path) as client:
+        assert client.get('/api/standardized').json()['rows'] == []
+        imported = upload(client)
+        assert client.get('/api/standardized').json()['summary']['unreviewed_imports'] == 1
+        old = make_review(client, imported, {**CONFIG, 'supplier': 'Ficticio'})
+        original = client.get(f"/api/reviews/{old['id']}/export").content
+        new = client.post(f"/api/reviews/{old['id']}/corrections", json={
+            'changes': [{'row_number': 2, 'column': 'C', 'value': 0}],
+            'reason': 'Prueba de actualización sin duplicar productos',
+        }).json()
+        upload(client)
+        result = client.get('/api/standardized').json()
+        assert result['summary'] == {'total': 1, 'ready': 1, 'pending': 0, 'unreviewed_imports': 1}
+        assert result['rows'][0]['sku'] == '001-A'
+        assert result['rows'][0]['price'] == 0
+        assert result['rows'][0]['review_id'] == new['id']
+        assert client.get(f"/api/reviews/{old['id']}/export").content == original
+        export = client.get('/api/standardized/export')
+        assert export.status_code == 200
+        assert export.content == client.get('/api/standardized/export').content
+        book = load_workbook(BytesIO(export.content))
+        assert book['Datos']['A2'].value == '001-A'
+        assert book['Datos']['B2'].value == 0
+        assert book['Datos'].max_row == 2
+        book.close()
+    with authenticated_client(tmp_path) as reopened:
+        assert reopened.get('/api/standardized').json() == result

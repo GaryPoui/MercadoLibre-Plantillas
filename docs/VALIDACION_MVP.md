@@ -70,3 +70,30 @@ con Python 3.12.14 y se instalaron las versiones fijadas sin modificar dependenc
 
 No se detectaron fallos que exigieran cambios en la aplicación durante esta revisión.
 El proceso de prueba se detuvo después del recorrido; el servidor de uso queda activo.
+
+## Ampliación: listas estandarizadas por SKU y precio
+
+2026-11-03: el usuario priorizó reunir todas las listas en un formato común.
+Se añadieron FR-025/027, SC-011/012 y tareas T019/022 a la especificación activa.
+El análisis cruzado cubrió los tres requisitos nuevos con cuatro tareas, sin
+conflictos críticos ni requisitos nuevos sin tarea. Los dos pendientes históricos
+de originales de proveedores siguen abiertos y no se presentan como validados.
+
+- 73 pruebas aprobadas: seis casos de normalización y uno de API/persistencia
+  añadidos a las 66 existentes. Continúa el aviso no bloqueante de TestClient.
+- Dos formatos sintéticos distintos generan SKU/precio comunes, conservando ceros
+  iniciales, cero explícito, proveedor, archivo, hoja, fila y revisión.
+- La API rechaza acceso sin sesión; las correcciones sustituyen únicamente la
+  revisión actual de su carga. Se verificó persistencia tras reabrir y conservación
+  de la descarga histórica. Las descargas estándar son reproducibles.
+- Precios negativos, ausentes o inválidos y SKU repetidos quedan pendientes; las
+  alternativas permanecen visibles. El mismo SKU de otro proveedor no se fusiona.
+- Chrome: recorrido anterior más dos listas/proveedores, sugerencias SKU/precio,
+  columnas de precio ambiguas sin selección automática, descarga y vista móvil.
+  Sin errores JavaScript ni desbordamiento horizontal de la página a390px.
+
+El consolidado es una proyección de la última revisión de cada carga, con una hoja
+por carga. No resuelve equivalencias entre códigos de proveedores diferentes, no
+elige precios ganadores ni convierte monedas. La descarga incluye también pendientes.
+Las listas sin revisar se contabilizan sin incorporarse como productos interpretados.
+Las referencias privadas siguen ausentes; se usaron exclusivamente datos sintéticos.

@@ -10,6 +10,33 @@
 
 ## Clarifications
 
+### Session 2026-11-03 — unificación de listas
+
+El usuario confirma que el resultado principal es estandarizar todas las listas de
+proveedores relacionando SKU y precio. El mapeo individual existente no basta como
+lista unificada. No se infiere equivalencia entre códigos de proveedores diferentes.
+
+- **FR-025**: Reunir las últimas revisiones de todas las cargas en una vista y una
+  descarga con columnas comunes SKU, precio, descripción, proveedor, archivo, hoja,
+  fila, revisión, estado e incidencias. Conservar alternativas y su procedencia.
+- **FR-026**: Exigir SKU y precio válidos para considerar una fila estandarizada;
+  ausencias, valores inválidos y duplicados quedan pendientes. Cero es válido.
+  No elegir precios entre listas ni fusionar identidades por coincidencia de código.
+- **FR-027**: Mostrar sugerencias de columnas por encabezados inequívocos para SKU
+  y precio, pendientes de confirmación al crear la revisión. No confundir costo con
+  precio ni resolver múltiples candidatos silenciosamente. Reutilizar perfiles explícitos.
+- **SC-011**: Dos listas con columnas distintas producen las mismas columnas de
+  salida; SKU con ceros iniciales, precio cero y origen se conservan. Correcciones
+  aparecen una sola vez por carga; revisiones anteriores siguen descargables.
+- **SC-012**: Precio ausente/negativo y SKU ambiguos nunca se muestran como listos.
+  La descarga y la tabla incluyen también los pendientes con sus motivos.
+
+Aceptación: cargar y revisar dos listas, consultar lista unificada y descargarla;
+corregir una carga y verificar que el consolidado usa solo su última revisión.
+Se excluyen hojas operativas; se informa cuántas cargas siguen sin revisión.
+La moneda y la naturaleza comercial del precio siguen siendo las del proveedor:
+no se suman, convierten monedas ni aplican impuestos por defecto.
+
 Autorización posterior: el usuario solicita ejecutar Spec Kit hasta MVP, implementar,
 verificar y subir commits con memoria por hito. Sustituye las restricciones históricas
 de no escribir aplicación. MVP de esta especificación: conversión/revisión local,

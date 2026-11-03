@@ -14,3 +14,8 @@
 Filas1-based, columnasletras. Row.kind product/header/context/empty; status
 usable/pending/rejected; issues con column/message. Identidad no por descripción.
 Original no mutable. Sin movimientos de inventario ni escritura externa.
+
+Proyección StandardizedRow (no tabla nueva): sku,price,description,supplier,filename,
+sheet,row_number,review_id,status,issues. Se deriva en un snapshot de la última
+revisión por carga; conserva todas las alternativas de cada proveedor/SKU. No es
+una identidad de producto global ni cambia el catálogo controlado.

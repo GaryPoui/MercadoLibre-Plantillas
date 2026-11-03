@@ -46,3 +46,10 @@ Cada historia se prueba con fixture controlado; cuentas reales no son prerequisi
 M1 diseño y análisis; M2 motor verificado; M3 API/panel persistente; M4 pruebas y entrega.
 No marcar tareas hasta observar resultado. Si aparece fallo de integridad, resolver
 antes de seguir. Revisión de25%/50%/100% de tarea no es hito publicable por sí misma.
+
+## Phase 9: Unificación de listas
+
+- [X] T019 Probar y construir proyección común SKU/precio/origen desde últimas revisiones en app/standardize.py y tests/test_standardize.py (FR-025/026, SC-011/012).
+- [X] T020 Exponer consulta y descarga estándar autenticadas, con lectura consistente de cargas/revisiones y sin modificar catálogo, en app/store.py, app/main.py y tests/test_api.py (FR-025, SC-011).
+- [X] T021 Agregar lista unificada, proveedor y sugerencias confirmables de SKU/precio en app/static/; comprobar Chrome con dos formatos y conflictos (FR-027, SC-011/012).
+- [X] T022 Verificar suite, reiniciar sistema conservando datos, actualizar guía/memoria y subir hito (FR-025/026/027).

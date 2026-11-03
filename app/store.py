@@ -186,6 +186,19 @@ class Store:
             row = db.execute("SELECT value FROM settings WHERE key='catalog'").fetchone()
         return json.loads(row[0]) if row else []
 
+    def latest_sources(self):
+        # Single SQL statement: imports and their latest reviews share one snapshot.
+        with self.connect() as db:
+            records = db.execute("""
+                SELECT json_extract(i.payload, '$.filename'), r.payload
+                FROM records AS i
+                LEFT JOIN records AS r
+                  ON r.id=json_extract(i.payload, '$.latest_review_id') AND r.kind='review'
+                WHERE i.kind='import' ORDER BY i.rowid
+            """).fetchall()
+        return [({"filename": filename}, json.loads(payload) if payload else None)
+                for filename, payload in records]
+
     def set_catalog(self, entries):
         with self.connect(write=True) as db:
             db.execute("INSERT INTO settings VALUES('catalog',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",

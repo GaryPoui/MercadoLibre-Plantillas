@@ -1,5 +1,11 @@
 # Decisiones técnicas
 Fecha2026-11-02. Investigación oficial por agente de fase0.
+
+Ampliación2026-11-03: unificar mediante proyección de revisiones certificadas, no
+volver a leer archivos ni sobrescribir productos por SKU. Se conserva proveedor
+explícito y procedencia. Consulta SQL única selecciona revisión actual por carga.
+Sugerencias de encabezados usan coincidencias exactas normalizadas; dos candidatos
+no se resuelven automáticamente. No hay servicio externo ni nuevas dependencias.
 - UploadFile no limita cuerpo: contador ASGI12MiB antes del multipart, archivo10MiB.
   https://fastapi.tiangolo.com/tutorial/request-files/ y https://starlette.dev/requests/
 - openpyxl lectura doble fórmula/caché; keep_links=False; defusedxml y ZIP acotado.

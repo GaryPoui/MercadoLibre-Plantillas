@@ -50,7 +50,47 @@ if (!['127.0.0.1', 'localhost'].includes(new URL(baseURL).hostname)) throw new E
     await page.locator('#profile-name').fill('Perfil CSV sintético'); await page.locator('#supplier').fill('Proveedor CSV ficticio'); await page.locator('#save-profile button[type=submit]').click(); await page.locator('#notice').filter({ hasText: 'Perfil guardado' }).waitFor();
     const option = await page.locator('#profile-select option').filter({ hasText: 'Perfil CSV sintético' }).getAttribute('value'); await page.locator('#profile-select').selectOption(option); await page.locator('#new-version').check(); await page.locator('#save-profile button[type=submit]').click(); await page.locator('#notice').filter({ hasText: 'Perfil guardado' }).waitFor();
     await page.locator('[data-view=profiles]').click(); await page.locator('#profiles-list').getByText('Perfil CSV sintético · versión 2', { exact: true }).waitFor(); await page.locator('[data-retire]').first().click(); await page.locator('#notice').filter({ hasText: 'Versión retirada' }).waitFor();
+    // Different supplier layouts must converge on the same SKU/price columns.
+    for (const fixture of [
+      { name: 'proveedor_uno.csv', text: 'SKU,Precio,Descripcion\n0001-UNIFICADO,0,Producto uno', supplier: 'Proveedor sintético uno', code: 'A', price: 'B' },
+      { name: 'proveedor_dos.csv', text: 'Descripcion,Precio,SKU\nProducto dos,75,0001-UNIFICADO', supplier: 'Proveedor sintético dos', code: 'C', price: 'B' },
+    ]) {
+      await page.locator('[data-view=work]').click();
+      await page.locator('#file').setInputFiles({ name: fixture.name, mimeType: 'text/csv', buffer: Buffer.from(fixture.text) });
+      await page.locator('#upload-form button').click();
+      await page.locator('#filename').filter({ hasText: fixture.name }).waitFor();
+      assert.equal(await page.locator('#map-code').inputValue(), fixture.code);
+      assert.equal(await page.locator('#map-base').inputValue(), fixture.price);
+      assert.match(await page.locator('#mapping-note').innerText(), /Sugerencia para revisar/);
+      await page.locator('#source-supplier').fill(fixture.supplier);
+      await page.locator('#config-form button[type=submit]').click();
+      await page.locator('#review-panel').waitFor({ state: 'visible' });
+    }
+    await page.locator('[data-view=unified]').click();
+    await page.locator('#unified-search').fill('0001-UNIFICADO');
+    await page.locator('#unified-table tbody tr').first().waitFor();
+    assert.equal(await page.locator('#unified-table tbody tr').count(), 2);
+    assert.match(await page.locator('#unified-table').innerText(), /Proveedor sintético uno/);
+    assert.match(await page.locator('#unified-table').innerText(), /Proveedor sintético dos/);
+    assert.equal(await page.locator('#unified-table').getByText('Listo', { exact: true }).count(), 2);
+    assert.equal(await page.locator('#unified-table tbody tr').first().locator('td').first().innerText(), '0');
+    const commonExport = await page.request.get(`${baseURL}/api/standardized/export`);
+    assert.equal(commonExport.status(), 200);
+    assert.equal((await commonExport.body()).subarray(0, 2).toString(), 'PK');
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), false);
+    await page.screenshot({ path: path.join(os.tmpdir(), 'mlpl-unified-mobile.png'), fullPage: true });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.screenshot({ path: path.join(os.tmpdir(), 'mlpl-unified-desktop.png'), fullPage: true });
+    // Multiple price candidates stay unassigned; cost is never guessed as price.
+    await page.locator('[data-view=work]').click();
+    await page.locator('#file').setInputFiles({ name: 'ambiguo.csv', mimeType: 'text/csv', buffer: Buffer.from('SKU,Precio,Price,Costo\n0002,10,20,5') });
+    await page.locator('#upload-form button').click();
+    await page.locator('#filename').filter({ hasText: 'ambiguo.csv' }).waitFor();
+    assert.equal(await page.locator('#map-code').inputValue(), 'A');
+    assert.equal(await page.locator('#map-base').inputValue(), '');
+    assert.match(await page.locator('#mapping-note').innerText(), /varias opciones/);
     assert.deepEqual(errors, []); await page.locator('#logout').click(); await page.locator('#auth').waitFor({ state: 'visible' });
-    console.log('PASS: autenticación, XLSX/CSV, mapeo, regla con factor cero, paginación60, pendientes, corrección, exportación, perfiles/versiones/retiro, historial, comparación Full y móvil; sin errores JS.');
+    console.log('PASS: autenticación, XLSX/CSV, mapeo, factor cero, paginación, corrección, exportación, perfiles/versiones/retiro, historial, Full, lista unificada de dos proveedores, SKU/precio sugeridos, ambigüedad bloqueada y móvil; sin errores JS.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

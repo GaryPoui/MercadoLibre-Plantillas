@@ -3,6 +3,14 @@
 **Branch**: codex/mvp-excel | **Date**: 2026-11-02 | **Spec**: [spec.md](spec.md)
 
 ## Summary
+
+Ampliación 2026-11-03: módulo `app/standardize.py` proyecta revisiones persistidas a
+columnas comunes. Selección de latest_review_id por carga, sin escribir catálogo ni
+fusionar proveedores; duplicados por proveedor conocido/SKU se señalan conservando
+filas. API autenticada GET /api/standardized y /api/standardized/export. Export usa
+el escritor seguro/determinista existente, con datos tomados de un único snapshot.
+Frontend agrega Lista unificada y sugerencias exactas sin autoaceptación. Sin migración
+de BD ni nuevas dependencias. Pruebas de normalización, API y recorrido navegador.
 Implementar la especificación activa: cargar XLSX/CSV, elegir hojas/bloques/mapear,
 revisar/corregir, perfiles/reglas versionados, historial persistente, comparar catálogo
 local por cuenta y exportar exactamente la revisión. Integración real ML es posterior.

@@ -21,6 +21,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from . import engine
 from .store import Store, Conflict, default_directory
+from .standardize import consolidate, export_standardized
 
 MAX_BODY = 12 * 1024 * 1024
 MAX_FILE = 10 * 1024 * 1024
@@ -398,6 +399,19 @@ def create_app(data_dir: Path | None = None):
     def list_catalog(request: Request):
         require_session(request)
         return store.catalog()
+
+    @app.get("/api/standardized")
+    def standardized(request: Request):
+        require_session(request)
+        return consolidate(store.latest_sources())
+
+    @app.get("/api/standardized/export")
+    def standardized_export(request: Request):
+        require_session(request)
+        snapshot = consolidate(store.latest_sources())
+        return Response(export_standardized(snapshot),
+                        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        headers={"Content-Disposition": 'attachment; filename="lista_unificada.xlsx"'})
 
     @app.post("/api/catalog")
     def replace_catalog(payload: CatalogInput, request: Request):

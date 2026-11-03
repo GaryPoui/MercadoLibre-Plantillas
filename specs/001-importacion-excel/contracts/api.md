@@ -1,4 +1,10 @@
 # API local v1 y contrato engine
+
+GET /api/standardized -> {rows, summary:{total,ready,pending,unreviewed_imports}}.
+Filas: sku,price,description,supplier,filename,sheet,row_number,review_id,status,issues.
+GET /api/standardized/export -> XLSX seguro y determinista del snapshot actual.
+Ambas rutas autenticadas. Una fila por producto de la última revisión de cada carga;
+no se incluyen revisiones históricas duplicadas ni se aplica deduplicación silenciosa.
 Auth: GET /api/auth/status -> {configured,authenticated,csrf?}.
 POST /api/auth/setup o /login {password}; POST /logout. Cookie HttpOnly strict,
 X-CSRF-Token obligatorio para mutaciones autenticadas; Host/Origin permitidos.
