@@ -4,21 +4,21 @@
 Pruebas requeridas por riesgos de integridad; cada hito memoria/commit/push.
 
 ## Phase 1: Setup
-- [ ] T001 Crear entorno aislado y dependencias fijadas en requirements.txt y pyproject.toml.
-- [ ] T002 Registrar memorias por hito y autorización vigente en docs/memory/INDEX.md y AGENTS.md.
+- [X] T001 Crear entorno aislado y dependencias fijadas en requirements.txt y pyproject.toml.
+- [X] T002 Registrar memorias por hito y autorización vigente en docs/memory/INDEX.md y AGENTS.md.
 
 ## Phase 2: Foundational
 - [ ] T003 Crear persistencia SQLite, originales privados, sesiones y concurrencia en app/store.py y tests/test_store.py (FR-010/012/018/020/024).
 - [ ] T004 Crear API autenticada, límites de cuerpo y controles Host/Origin/CSRF en app/main.py y tests/test_api.py (FR-024).
 
 ## Phase 3: US1 Interpretar y revisar
-- [ ] T005 [US1] Leer XLSX/CSV con tipos, fórmulas, origen y límites en app/engine.py (FR-001/002/003/013/016/021).
-- [ ] T006 [US1] Probar ceros iniciales, vacío/cero, corruptos, ZIP, encabezados múltiples, auxiliares en tests/test_engine.py (SC-001/002/009).
+- [X] T005 [US1] Leer XLSX/CSV con tipos, fórmulas, origen y límites en app/engine.py (FR-001/002/003/013/016/021).
+- [X] T006 [US1] Probar ceros iniciales, vacío/cero, corruptos, ZIP, encabezados múltiples, auxiliares en tests/test_engine.py (SC-001/002/009).
 - [ ] T007 [US1] Construir mapeo y revisión con estados, errores y contexto en app/engine.py y app/static/app.js (FR-004/005/007/009).
 
 ## Phase 4: US4 Convertir/exportar
-- [ ] T008 [US4] Evaluar aritmética permitida con ciclos, dependencias y parámetros sin eval en app/engine.py y tests/test_formulas.py (FR-014/021/022).
-- [ ] T009 [US4] Exportar XLSX de revisión sin reprocesar con informe completo y texto seguro en app/engine.py y tests/test_engine.py (FR-011/014/015/023,SC-004/005/006).
+- [X] T008 [US4] Evaluar aritmética permitida con ciclos, dependencias y parámetros sin eval en app/engine.py y tests/test_formulas.py (FR-014/021/022).
+- [X] T009 [US4] Exportar XLSX de revisión sin reprocesar con informe completo y texto seguro en app/engine.py y tests/test_engine.py (FR-011/014/015/023,SC-004/005/006).
 
 ## Phase 5: US3 Historial
 - [ ] T010 [US3] Persistir cargas/huellas/revisiones y listar/restaurar/exportar en app/main.py, app/store.py y tests/test_api.py (FR-010/011/012/020/023,SC-008/010).
