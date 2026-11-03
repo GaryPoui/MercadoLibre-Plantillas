@@ -52,6 +52,11 @@ previo; no se instalaron estas dependencias ni se creó una aplicación en esta 
 
 ## Secuencia de especificaciones
 
+La numeración definitiva y el estado de cada entrega están en
+[HOJA_DE_RUTA.md](HOJA_DE_RUTA.md). 001 está implementada; 002 mejora el panel;
+003 gestiona listas vigentes; 004..007 cubren integración y operación futuras.
+La secuencia orientativa histórica siguiente se conserva como antecedente.
+
 1. `001-importacion-excel`: interpretar, convertir, revisar y exportar sin cuentas conectadas; perfiles y correcciones con alcance explícito (borrador ampliado).
 2. Conexión de cuentas y lectura de catálogo: OAuth y vínculos por vendedor.
 3. Aplicación y verificación de precios: conflictos, restricciones y reintentos.

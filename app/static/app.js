@@ -1,7 +1,7 @@
 'use strict';
 const $ = id => document.getElementById(id);
 const state = { csrf: '', configured: false, imported: null, review: null, profiles: [], page: 1, config: {} };
-const roles = { code: 'SKU / código de producto', description: 'Descripción', base: 'Precio de la lista', listing: 'Publicación', quantity: 'Cantidad', logistics: 'Logística' };
+const roles = { code: 'SKU / código de producto', base: 'Precio de la lista', description: 'Descripción', listing: 'Publicación', quantity: 'Cantidad', logistics: 'Logística' };
 const labels = { usable: 'Utilizable', pending: 'Pendiente', rejected: 'Rechazada', context: 'Contexto', empty: 'Vacía' };
 const comparisonLabels = { ready: 'Propuesta local', unlinked: 'Sin vínculo', ambiguous: 'Vínculo ambiguo', full: 'Full: solo lectura', unverified: 'Capacidad no verificada', invalid: 'Datos pendientes' };
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -25,7 +25,7 @@ async function api(path, options = {}) {
   }
   return data;
 }
-function run(action) { return async event => { event?.preventDefault(); clearError(); const form = event?.target?.closest?.('form'); const buttons = form ? [...form.querySelectorAll('button')] : []; buttons.forEach(b => b.disabled = true); try { await action(event); } catch (error) { showError(error); if (!$('auth').hidden) $('auth-error').textContent = error.message; } finally { buttons.forEach(b => b.disabled = false); } }; }
+function run(action) { return async event => { event?.preventDefault(); clearError(); const form = event?.target?.closest?.('form'); const buttons = form ? [...form.querySelectorAll('button')] : []; buttons.forEach(b => b.disabled = true); form?.setAttribute('aria-busy', 'true'); try { await action(event); } catch (error) { showError(error); if (!$('auth').hidden) $('auth-error').textContent = error.message; } finally { form?.removeAttribute('aria-busy'); buttons.forEach(b => b.disabled = false); } }; }
 async function authStatus() {
   const result = await api('/api/auth/status'); state.configured = result.configured; state.csrf = result.csrf ?? '';
   $('auth').hidden = !!result.authenticated; $('shell').hidden = !result.authenticated;
@@ -35,12 +35,15 @@ async function authStatus() {
   return result.authenticated;
 }
 async function navigate() {
-  let view = location.hash.slice(1).split('?')[0] || 'work'; if (!['work', 'unified', 'history', 'profiles', 'catalog'].includes(view)) view = 'work';
+  message('');
+  let view = location.hash.slice(1).split('?')[0] || 'home'; if (!['home', 'work', 'unified', 'history', 'profiles', 'catalog'].includes(view)) view = 'home';
   document.querySelectorAll('.view').forEach(node => node.hidden = node.id !== `view-${view}`);
   document.querySelectorAll('[data-view]').forEach(node => node.dataset.view === view ? node.setAttribute('aria-current', 'page') : node.removeAttribute('aria-current'));
+  $('page-name').textContent = { home: 'Inicio', work: 'Cargar una lista', unified: 'Lista unificada', history: 'Archivos e historial', profiles: 'Proveedores y perfiles', catalog: 'Comparación de prueba' }[view];
   if ($('shell').hidden) return;
+  if (view === 'home') await loadHome();
   if (view === 'history') await loadHistory();
-  if (view === 'unified') await loadUnified();
+  if (view === 'unified') { const requested = new URLSearchParams(location.hash.split('?')[1] ?? '').get('status'); $('unified-filter').value = requested === 'pending' ? 'pending' : 'all'; await loadUnified(); }
   if (view === 'profiles') await loadProfiles();
   if (view === 'catalog') await loadCatalog();
 }
@@ -50,7 +53,9 @@ function renderColumns(mapping = {}) {
   const formulaColumns = [...Object.keys(state.config.formulas ?? {}), ...[...$('formula-rows').querySelectorAll('.rule-key')].map(input => input.value.trim())].filter(key => /^[A-Z]{1,2}$/.test(key));
   const formulaWidth = Math.max(0, ...formulaColumns.map(key => [...key].reduce((total, letter) => total * 26 + letter.charCodeAt(0) - 64, 0)));
   const options = Array.from({ length: Math.min(100, Math.max(count, formulaWidth)) }, (_, i) => columnName(i));
-  $('mapping').innerHTML = Object.entries(roles).map(([key, label]) => `<div><label for="map-${key}">${label}</label><select id="map-${key}" data-role="${key}"><option value="">Sin asignar</option>${options.map(col => `<option value="${col}" ${mapping[key] === col ? 'selected' : ''}>${col}</option>`).join('')}</select></div>`).join('');
+  const fieldMarkup = ([key, label]) => `<div class="${['code', 'base'].includes(key) ? 'key-mapping' : ''}"><label for="map-${key}">${label}</label><select id="map-${key}" data-role="${key}"><option value="">Sin asignar</option>${options.map(col => `<option value="${col}" ${mapping[key] === col ? 'selected' : ''}>${esc(columnLabel(col))}</option>`).join('')}</select></div>`;
+  const fields = Object.entries(roles);
+  $('mapping').innerHTML = fields.filter(([key]) => ['code', 'base', 'description'].includes(key)).map(fieldMarkup).join('') + `<details class="extra-mapping"><summary>Más datos: publicación, cantidad y logística</summary><div class="mapping-grid">${fields.filter(([key]) => !['code', 'base', 'description'].includes(key)).map(fieldMarkup).join('')}</div></details>`;
   $('correction-column').innerHTML = options.map(col => `<option>${col}</option>`).join('');
   const preview = sheet?.preview ?? [];
   $('source-preview').innerHTML = preview.length ? `<table><caption class="sr-only">Primeras ${preview.length} filas de ${esc(sheet.name)}</caption><thead><tr><th scope="col">Fila</th>${options.map(col => `<th scope="col">${col}</th>`).join('')}</tr></thead><tbody>${preview.map((row, i) => `<tr><th scope="row">${i + 1}</th>${options.map((col, j) => `<td>${esc(display(row[j]))}</td>`).join('')}</tr>`).join('')}</tbody></table>` : '<p class="empty">Esta hoja no tiene una vista previa disponible.</p>';
@@ -88,12 +93,12 @@ function setConfig(config) {
   $('advanced-config').value = JSON.stringify(config, null, 2);
 }
 function openImport(imported) {
-  state.imported = imported; state.review = null; state.config = {}; $('workspace').hidden = false; $('review-panel').hidden = true;
-  $('profile-select').value = ''; $('new-version').checked = false; $('row-filter').value = 'all'; $('row-search').value = '';
+  state.imported = imported; state.review = null; state.config = {}; $('mapping-panel').open = true; $('workspace').hidden = false; $('review-panel').hidden = true;
+  $('profile-select').value = ''; $('new-version').checked = false; $('profile-note').textContent = 'Las correcciones de filas quedan en su revisión.'; $('row-filter').value = 'all'; $('row-search').value = '';
   $('filename').textContent = imported.filename ?? 'Archivo cargado'; $('duplicate').textContent = imported.duplicate_of ? 'Archivo repetido: original conservado' : 'Archivo recibido';
   $('sheet').innerHTML = (imported.sheets ?? []).map(sheet => `<option value="${esc(sheet.name)}">${esc(sheet.name)} · ${nfmt(Number(sheet.rows ?? 0))} filas</option>`).join('');
   setConfig({ sheet: imported.sheets?.[0]?.name ?? '', header_rows: [1], data_start: 2, mapping: {}, parameters: {}, formulas: {} });
-  suggestMapping();
+  suggestMapping(); updateSteps();
 }
 function renderReview(review) {
   state.review = review; state.page = 1; $('review-panel').hidden = false;
@@ -101,7 +106,8 @@ function renderReview(review) {
   $('export').href = `/api/reviews/${encodeURIComponent(review.id)}/export`;
   const summary = review.summary ?? {};
   $('summary').innerHTML = [['total', 'Filas leídas'], ['usable', 'Utilizables'], ['pending', 'Pendientes'], ['rejected', 'Rechazadas'], ['context', 'Contexto'], ['empty', 'Vacías']].map(([key, label]) => `<div class="summary-item"><strong>${nfmt(summary[key] ?? 0)}</strong><span>${label}</span></div>`).join('');
-  $('comparison').replaceChildren(); drawRows();
+  $('comparison').replaceChildren(); drawRows(); updateSteps();
+  if (review.config?.supplier) $('supplier').value = review.config.supplier;
 }
 function filteredRows() {
   const filter = $('row-filter').value; const search = $('row-search').value.trim().toLocaleLowerCase('es');
@@ -159,7 +165,7 @@ function drawComparison(result) {
   $('comparison').innerHTML = `<p>${nfmt(differences.length)} resultados para la cuenta elegida. Ninguno se envía a Mercado Libre.</p><div class="table-wrap comparison-table" tabindex="0"><table><caption class="sr-only">Comparación con catálogo controlado</caption><thead><tr><th scope="col">Fila / código</th><th scope="col">Publicación</th><th scope="col">Precio previo / propuesto</th><th scope="col">Cantidad previa / propuesta</th><th scope="col">Estado y motivos</th></tr></thead><tbody>${differences.map(item => `<tr><td>${esc(item.row_number)} · ${esc(item.product_key)}</td><td>${esc(item.listing_id)}</td><td>${esc(display(item.current_price))} / ${esc(display(item.proposed_price))}</td><td>${esc(display(item.current_quantity))} / ${esc(display(item.proposed_quantity))}</td><td>${esc(comparisonLabels[item.status] ?? item.status)}${item.blocked ? ' · Bloqueado' : ' · Solo propuesta local'}${(item.reasons ?? []).map(reason => `<span class="issue">${esc(reason)}</span>`).join('')}</td></tr>`).join('')}</tbody></table></div>`;
 }
 $('auth-form').addEventListener('submit', run(async () => { await api(`/api/auth/${state.configured ? 'login' : 'setup'}`, { method: 'POST', body: { password: $('password').value } }); $('password').value = ''; if (await authStatus()) { await loadProfiles(); await navigate(); } }));
-$('logout').onclick = run(async () => { await api('/api/auth/logout', { method: 'POST' }); state.imported = null; state.review = null; unifiedRows = []; $('unified-table').replaceChildren(); $('unified-summary').replaceChildren(); $('workspace').hidden = true; $('history-list').replaceChildren(); $('history-reviews').replaceChildren(); $('catalog-json').value = '[]'; await authStatus(); });
+$('logout').onclick = run(async () => { await api('/api/auth/logout', { method: 'POST' }); state.imported = null; state.review = null; unifiedRows = []; $('home-summary').replaceChildren(); $('home-recent').replaceChildren(); $('unified-table').replaceChildren(); $('unified-summary').replaceChildren(); $('workspace').hidden = true; $('history-list').replaceChildren(); $('history-reviews').replaceChildren(); $('profiles-list').replaceChildren(); $('review-panel').hidden = true; $('catalog-json').value = '[]'; await authStatus(); });
 $('upload-form').addEventListener('submit', run(async () => { const file = $('file').files[0]; if (!file) throw new Error('Elegí un archivo antes de cargar.'); if (file.size > 10 * 1024 * 1024) throw new Error('El archivo supera 10 MiB. Prepará una copia más pequeña.'); const body = new FormData(); body.append('file', file); openImport(await api('/api/imports', { method: 'POST', body })); message('Archivo conservado. Elegí su estructura para crear la revisión.'); }));
 $('sheet').onchange = () => { const mapping = Object.fromEntries([...document.querySelectorAll('[data-role]')].map(select => [select.dataset.role, select.value])); renderColumns(mapping); $('mapping-note').textContent = 'Revisá las columnas para esta hoja o pedí una nueva sugerencia.'; };
 $('profile-select').onchange = run(async () => { const profile = state.profiles.find(item => String(item.id ?? item.version_id) === $('profile-select').value); if (!profile) return; if (!state.imported) throw new Error('Cargá primero un archivo.'); if (!state.imported.sheets.some(sheet => sheet.name === profile.config.sheet)) throw new Error('El perfil usa una hoja que no existe en esta carga. Revisá su compatibilidad antes de reutilizarlo.'); setConfig({ ...profile.config, supplier: profile.supplier }); $('profile-note').textContent = `Perfil ${profile.name}, versión ${profile.version}; proveedor ${profile.supplier}. Revisá la correspondencia antes de crear la revisión.`; $('profile-name').value = profile.name; $('supplier').value = profile.supplier; });
@@ -217,7 +223,7 @@ function drawUnified() {
   const rows = unifiedRows.filter(row => (filter === 'all' || row.status === filter) && (!search || [row.sku, row.supplier, row.filename, row.description].some(value => String(value ?? '').toLocaleLowerCase('es').includes(search))));
   const pages = Math.max(1, Math.ceil(rows.length / 50)); unifiedPage = Math.min(unifiedPage, pages);
   const selected = rows.slice((unifiedPage - 1) * 50, unifiedPage * 50);
-  $('unified-table').innerHTML = selected.length ? `<table><caption class="sr-only">Lista común de SKU y precios con procedencia</caption><thead><tr><th scope="col">SKU</th><th scope="col">Precio</th><th scope="col">Descripción</th><th scope="col">Proveedor</th><th scope="col">Origen</th><th scope="col">Estado</th><th scope="col">Incidencias</th></tr></thead><tbody>${selected.map(row => `<tr><th scope="row">${esc(display(row.sku))}</th><td>${esc(display(row.price))}</td><td>${esc(display(row.description))}</td><td>${esc(row.supplier || 'Sin identificar')}</td><td>${esc(row.filename)}<br>${esc(row.sheet)} · fila ${esc(row.row_number)}<br><small>Revisión ${esc(row.review_id)}</small></td><td><span class="badge ${row.status === 'ready' ? 'usable' : 'pending'}">${row.status === 'ready' ? 'Listo' : 'Pendiente'}</span></td><td>${row.issues.map(issue => `<span class="issue">${esc(issue)}</span>`).join('') || 'Sin incidencias'}</td></tr>`).join('')}</tbody></table>` : '<p class="empty">No hay productos para mostrar. Cargá una lista, identificá su proveedor y creá una revisión con SKU y precio, o cambiá el filtro.</p>';
+  $('unified-table').innerHTML = selected.length ? `<table class="unified-data"><caption class="sr-only">Lista común de SKU y precios con procedencia</caption><thead><tr><th scope="col">SKU</th><th scope="col">Precio</th><th scope="col">Descripción</th><th scope="col">Proveedor</th><th scope="col">Origen</th><th scope="col">Estado</th><th scope="col">Incidencias</th></tr></thead><tbody>${selected.map(row => `<tr><th scope="row">${esc(display(row.sku))}</th><td><strong class="price-value">${esc(display(row.price))}</strong></td><td>${esc(display(row.description))}</td><td>${esc(row.supplier || 'Sin identificar')}</td><td>${esc(row.filename)}<br><small>${esc(row.sheet)} · fila ${esc(row.row_number)}</small><details><summary>Ver revisión</summary><small>${esc(row.review_id)}</small></details></td><td><span class="badge ${row.status === 'ready' ? 'usable' : 'pending'}">${row.status === 'ready' ? 'Listo' : 'Pendiente'}</span></td><td>${row.issues.map(issue => `<span class="issue">${esc(issue)}</span>`).join('') || 'Sin incidencias'}</td></tr>`).join('')}</tbody></table>` : `<p class="empty">${unifiedRows.length ? 'No hay coincidencias con estos filtros. Probá otra búsqueda o limpiá los filtros.' : 'Tu lista unificada empieza con un archivo. Cargá la lista de un proveedor y confirmá SKU y precio.'}</p>`;
   $('unified-page').textContent = `Página ${nfmt(unifiedPage)} de ${nfmt(pages)} · ${nfmt(rows.length)} productos`;
   $('unified-prev').disabled = unifiedPage <= 1; $('unified-next').disabled = unifiedPage >= pages;
 }
@@ -226,3 +232,40 @@ $('unified-search').oninput = () => { unifiedPage = 1; drawUnified(); };
 $('unified-filter').onchange = () => { unifiedPage = 1; drawUnified(); };
 $('unified-prev').onclick = () => { unifiedPage--; drawUnified(); };
 $('unified-next').onclick = () => { unifiedPage++; drawUnified(); };
+
+function columnLabel(col) {
+  const sheet = sheetMetadata();
+  const index = [...col].reduce((n, letter) => n * 26 + letter.charCodeAt(0) - 64, 0) - 1;
+  const headers = $('header-rows').value.split(',').map(n => Number(n.trim()));
+  const titles = headers.map(row => sheet?.preview?.[row - 1]?.[index]).filter(value => value !== null && value !== undefined && value !== '');
+  return `${col}${titles.length ? ` · ${titles.join(' / ').slice(0, 90)}` : ' · Sin encabezado visible'}`;
+}
+function updateSteps() {
+  const current = state.review ? 2 : state.imported ? 1 : 0;
+  ['file', 'map', 'result'].forEach((name, i) => {
+    const item = $(`step-${name}`); item.classList.toggle('complete', i < current);
+    if (i === current) item.setAttribute('aria-current', 'step'); else item.removeAttribute('aria-current');
+  });
+  $('jump-map').disabled = !state.imported; $('jump-result').disabled = !state.review;
+}
+$('jump-file').onclick = () => { $('upload-area').scrollIntoView({ block: 'center', behavior: 'instant' }); $('file').focus({ preventScroll: true }); };
+$('jump-map').onclick = () => { $('mapping-panel').open = true; $('mapping-panel').scrollIntoView({ block: 'start' }); $('source-supplier').focus({ preventScroll: true }); };
+$('jump-result').onclick = () => { $('review-panel').scrollIntoView({ block: 'start' }); $('row-filter').focus({ preventScroll: true }); };
+$('header-rows').addEventListener('change', () => renderColumns(Object.fromEntries([...document.querySelectorAll('[data-role]')].map(select => [select.dataset.role, select.value]))));
+$('clear-unified').onclick = () => { $('unified-search').value = ''; $('unified-filter').value = 'all'; unifiedPage = 1; drawUnified(); $('unified-search').focus(); };
+let homeGeneration = 0;
+async function loadHome() {
+  const generation = ++homeGeneration;
+  let imports, snapshot, profiles;
+  try {
+    [imports, snapshot, profiles] = await Promise.all([api('/api/imports'), api('/api/standardized'), api('/api/profiles')]);
+  } catch (error) {
+    if (generation === homeGeneration) { $('home-summary').replaceChildren(); $('home-recent').innerHTML = '<p class="empty">No pudimos cargar el resumen. Volvé a Inicio para reintentar. Tus archivos guardados se conservan.</p>'; }
+    throw error;
+  }
+  if (generation !== homeGeneration || $('shell').hidden) return;
+  const suppliers = new Set(snapshot.rows.map(row => row.supplier).filter(Boolean));
+  const counters = [[imports.length, 'Archivos cargados', '#history', 'Tus originales e historial'], [snapshot.summary.total, 'Productos revisados', '#unified', 'SKU y precios reunidos'], [snapshot.summary.pending, 'Para revisar', '#unified?status=pending', 'Datos que necesitan atención'], [suppliers.size, 'Proveedores identificados', '#profiles', `${profiles.filter(p => !p.retired).length} perfiles disponibles`]];
+  $('home-summary').innerHTML = counters.map(([count, label, href, note], i) => `<a class="home-metric metric-${i}" href="${href}"><span>${esc(label)}</span><strong>${nfmt(count)}</strong><small>${esc(note)}</small></a>`).join('');
+  $('home-recent').innerHTML = imports.length ? imports.slice(0, 3).map(item => `<article class="recent-file"><span class="file-symbol" aria-hidden="true">${esc(item.filename.split('.').pop().toUpperCase())}</span><div class="grow"><strong>${esc(item.filename)}</strong><small>${date(item.created_at)}</small></div><span class="badge ${item.latest_review_id ? 'usable' : 'pending'}">${item.latest_review_id ? 'Revisado' : 'Sin revisar'}</span></article>`).join('') : '<div class="empty home-empty"><span class="file-symbol" aria-hidden="true">XLSX</span><h3>Tu primer archivo empieza acá</h3><p>Cargá un Excel o CSV. Te ayudamos a relacionar el SKU y el precio sin modificar el original.</p><a href="#work" class="button primary">Cargar mi primera lista</a></div>';
+}

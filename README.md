@@ -32,6 +32,12 @@ La sesión, los originales y las revisiones nunca se guardan en Git.
 
 ## Primer recorrido
 
+El panel abre en **Inicio**, con un resumen real del espacio, últimos archivos y
+accesos para cargar o consultar la lista unificada. **Cargar una lista** muestra los
+tres pasos: Archivo, SKU y precio, Resultado. En las correspondencias se muestran
+letra y encabezado de columna; publicación, cantidad y logística están en Más datos.
+Las fórmulas y la configuración avanzada se mantienen como opciones desplegables.
+
 1. Descargar la muestra sintética o cargar un XLSX/CSV propio.
 2. Elegir hoja, filas de encabezado e inicio; asignar código, descripción y valor base.
 3. Crear revisión; consultar errores, origen y valores. Corregir una fila crea otra revisión.
@@ -92,6 +98,11 @@ reconstruye en memoria; no descarga ni publica datos. Ver [resultados y límites
 - [Guía de Spec Kit](docs/SPECKIT.md): herramientas, comandos y estado de cada fase.
 
 ## Próximo paso
+
+La siguiente ampliación funcional es gestionar una lista vigente por proveedor,
+comparando precios anteriores/nuevos antes de activarla. Las siguientes entregas están
+especificadas en la [hoja de ruta](docs/HOJA_DE_RUTA.md): proveedores, cuentas/catálogo,
+precios verificados, inventario/ventas y alertas. Son capacidades futuras.
 
 Probar las nuevas listas de proveedores cuando lleguen y ampliar perfiles a partir
 de evidencia. OAuth, inventario transaccional, ventas y sincronización real de Mercado

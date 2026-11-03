@@ -170,3 +170,14 @@ catálogo controlado.66tests,9casos privados y recorrido Chrome aprobados; detal
 en `docs/VALIDACION_MVP.md`. Instalación y uso en README. Memorias compactas en docs/memory/.
 No se conectaron cuentas ni se implementaron escriturasML/ventas/inventario transaccional.
 Estas son próximas funcionalidades del objetivo general, no capacidades del MVP actual.
+
+## Panel ampliado y specs siguientes, 3 de noviembre de 2026
+
+El usuario pide mejorar el diseño y la experiencia de carga y continuar con los specs
+faltantes. Se autoriza implementar el panel002, manteniendo el motor y los datos de001.
+Inicio muestra datos reales; carga guiada prioriza SKU/precio y la navegación ofrece
+historial, perfiles y lista unificada. Especificaciones003..007 documentan proveedores
+y versiones vigentes, cuentas/catálogoML, precios verificados, inventario/ventas y
+alertas. No se presentan como implementadas. Consultar docs/HOJA_DE_RUTA.md.
+La lectura directa de tres páginas oficialesML volvió a devolver403; documentación
+accesible y capacidades reales siguen siendo condiciones previas de la integración.

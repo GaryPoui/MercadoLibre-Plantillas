@@ -97,3 +97,30 @@ por carga. No resuelve equivalencias entre códigos de proveedores diferentes, n
 elige precios ganadores ni convierte monedas. La descarga incluye también pendientes.
 Las listas sin revisar se contabilizan sin incorporarse como productos interpretados.
 Las referencias privadas siguen ausentes; se usaron exclusivamente datos sintéticos.
+
+## Panel002 y hoja de ruta
+
+2026-11-03: rediseñado el panel con Inicio, resumen real, últimos archivos, carga en
+tres pasos, mapeo letra/encabezado, foco SKU/precio y datos opcionales desplegables.
+La lista unificada conserva filtro, descarga y procedencia con mejor jerarquía visual.
+No se modificaron persistencia, motor, endpoints ni reglas comerciales.
+
+- Suite de regresión: 73 pruebas aprobadas; aviso TestClient conocido.
+- Chrome, recorrido completo anterior más Inicio vacío/con datos, contadores contra
+  API, tres pasos, etiquetas de columna, limpieza de filtros y navegación por teclado.
+- Fallo503 sintético en el resumen: no se muestran contadores obsoletos y se puede
+  recuperar al volver a Inicio sin tocar archivos.
+- Capturas revisadas de Inicio, mapeo y tabla en escritorio1440px y móvil390px.
+  Sin errores de ejecución JS ni desbordamiento horizontal de la página en el recorrido.
+- Corregidos ayuda de perfil residual al cambiar archivo, avisos ajenos a la vista
+  nueva y un detalle visual del indicador de guardado.
+- Análisis de002: siete requisitos, cuatro criterios y seis tareas con cobertura;
+  sin conflictos críticos con la constitución ni requisitos sin tarea. Checklist5/5.
+- Specs003..007 creados con historias, aceptación, requisitos, casos límite,
+  dependencias y calidad documental. No se presentan como implementados.
+
+La verificación de teclado es un recorrido, no una certificación de accesibilidad.
+La configuración activa de Spec Kit es local en `.specify/feature.json`, ignorada por
+el diseño existente de Spec Kit; la memoria y hoja de ruta versionadas indican002.
+Las fuentes oficialesML no pudieron leerse por403; los contratos/capacidades no se
+declaran verificados. No hay nuevas escrituras externas ni datos de prueba en la BD de uso.

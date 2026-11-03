@@ -1,20 +1,433 @@
 <!doctype html>
-<html lang="es-AR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#123f50"><title>Mesa de listas · Plantillas</title><link rel="stylesheet" href="/static/styles.css"><script src="/static/app.js" defer></script></head>
-<body><a class="skip" href="#main">Ir al contenido</a>
-<section id="auth" class="auth" hidden><div class="auth-box"><span class="brand-mark" aria-hidden="true">▦</span><h1>Mesa de listas</h1><p id="auth-help">Ingresá para revisar tus archivos.</p><form id="auth-form"><label for="password">Contraseña local</label><input id="password" name="password" type="password" required minlength="12" autocomplete="current-password"><button type="submit" class="primary" id="auth-submit">Ingresar</button></form><p id="auth-error" role="alert"></p><small>Los archivos se conservan en este equipo. No se conectan cuentas de Mercado Libre.</small></div></section>
-<div id="shell" hidden><aside class="sidebar"><a class="brand" href="#work"><span class="brand-mark" aria-hidden="true">▦</span><span>Mesa de<br><strong>listas</strong></span></a><nav aria-label="Principal"><a href="#work" data-view="work">Importar y revisar</a><a href="#unified" data-view="unified">Lista unificada</a><a href="#history" data-view="history">Historial de archivos</a><a href="#profiles" data-view="profiles">Perfiles y reglas</a><a href="#catalog" data-view="catalog">Catálogo controlado</a></nav><div class="side-bottom"><span class="local-dot"></span> Espacio local<p>Originales protegidos.<br>Sin cambios en Mercado Libre.</p><button id="logout" class="quiet">Cerrar sesión</button></div></aside>
-<main id="main" tabindex="-1"><header class="topbar"><span>MercadoLibre · Plantillas</span><span class="tag">Conversión local</span></header><div id="notice" class="notice" role="status" aria-live="polite" hidden></div><div id="error" class="error" role="alert" hidden></div>
-<section id="view-work" class="view"><div class="page-heading"><div><p class="kicker">Espacio de trabajo</p><h1>De tu archivo a una lista revisada</h1><p>Elegí qué leer, revisá los datos y descargá una copia con su informe.</p></div><a href="/api/demo.xlsx" class="button secondary">Descargar muestra sintética</a></div>
-<section class="upload-strip"><div><h2>1. Cargar una lista</h2><p>XLSX o CSV UTF-8 · hasta 10 MiB · original intacto</p></div><form id="upload-form"><label class="sr-only" for="file">Archivo XLSX o CSV</label><input type="file" id="file" name="file" accept=".xlsx,.csv" required><button class="primary" type="submit">Cargar archivo</button></form></section>
-<div id="workspace" hidden><div class="file-line"><strong id="filename"></strong><span id="duplicate" class="tag"></span></div>
-<details class="panel" open><summary>2. Elegir hoja, columnas y reglas</summary><form id="config-form"><div class="form-grid"><div><label for="sheet">Hoja</label><select id="sheet" name="sheet" required></select></div><div><label for="header-rows">Filas de encabezado</label><input id="header-rows" name="header_rows" value="1" autocomplete="off" placeholder="1, 2…"><small>Números separados por coma.</small></div><div><label for="data-start">Primera fila de datos</label><input id="data-start" name="data_start" type="number" min="1" value="2" required></div><div><label for="profile-select">Reutilizar perfil</label><select id="profile-select"><option value="">Configurar esta carga</option></select><small id="profile-note">Las correcciones de filas quedan en su revisión.</small></div></div>
-<label for="source-supplier">Proveedor de esta lista</label><input id="source-supplier" maxlength="100" autocomplete="off" placeholder="Identificá el proveedor para conservar el origen"><small>Se guarda en la revisión. Un código igual de otro proveedor no demuestra que sea el mismo producto.</small><label for="sheet-kind">Uso de esta hoja</label><select id="sheet-kind"><option value="catalog">Catálogo de productos</option><option value="operational">Hoja auxiliar, métricas o tareas (sin productos)</option></select><div id="source-preview" class="table-wrap preview" tabindex="0" aria-label="Vista inicial del archivo"></div><h3>Correspondencia de columnas</h3><p class="muted">Asigná letras de columna según su significado. Sin asignar conserva el dato sin atribuirle un rol.</p><div id="mapping" class="mapping-grid"></div><button type="button" id="suggest-mapping" class="secondary">Sugerir SKU y precio por encabezados</button><p id="mapping-note" class="muted" role="status"></p>
-<details class="rules"><summary>Parámetros y cálculos explícitos</summary><p>Sin factores predeterminados. Los cálculos usan referencias a celdas, parámetros y <code>{row}</code> para la fila actual.</p><div class="split"><div><h4>Parámetros numéricos</h4><div id="parameter-rows"></div><button type="button" id="add-parameter" class="secondary">Agregar parámetro</button></div><div><h4>Fórmulas por columna</h4><div id="formula-rows"></div><button type="button" id="add-formula" class="secondary">Agregar fórmula</button><small>Ejemplo de sintaxis: =D{row}*factor. No define una regla comercial.</small></div></div><details><summary>Configuración avanzada JSON</summary><label for="advanced-config">Configuración completa</label><textarea id="advanced-config" rows="8" spellcheck="false"></textarea><button type="button" id="load-json" class="secondary">Aplicar JSON al formulario</button><button type="button" id="show-json" class="quiet">Actualizar JSON desde formulario</button></details></details><div class="actions"><button class="primary" type="submit">Crear revisión</button><span class="muted">Revisar no publica ni modifica existencias.</span></div></form></details>
-<section id="review-panel" hidden><div class="section-heading"><div><h2>3. Revisar el resultado</h2><p id="review-info" class="muted"></p></div><a id="export" class="button primary" href="#">Descargar revisión XLSX</a></div><div id="summary" class="summary-strip"></div><div class="toolbar"><div><label for="row-filter">Mostrar filas</label><select id="row-filter"><option value="all">Todas</option><option value="usable">Utilizables</option><option value="pending">Pendientes</option><option value="rejected">Rechazadas</option><option value="context">Contexto</option><option value="empty">Vacías</option><option value="issues">Con incidencias</option></select></div><div class="grow"><label for="row-search">Buscar en datos e incidencias</label><input id="row-search" type="search" autocomplete="off" placeholder="Código, descripción o mensaje…"></div><div><label for="page-size">Filas por página</label><select id="page-size"><option>25</option><option>50</option></select></div></div><div id="review-table" class="table-wrap" tabindex="0" aria-label="Filas revisadas"></div><div class="pagination"><button id="prev" class="secondary">Anterior</button><span id="page-info" aria-live="polite"></span><button id="next" class="secondary">Siguiente</button></div><div class="split panel"><form id="save-profile"><h3>Conservar este criterio</h3><p>El perfil reutiliza estructura y reglas. Las correcciones locales de celdas no se generalizan.</p><label for="profile-name">Nombre del perfil</label><input id="profile-name" name="name" required autocomplete="off"><label for="supplier">Proveedor o alcance</label><input id="supplier" name="supplier" required autocomplete="off"><label class="check"><input type="checkbox" id="new-version">Crear nueva versión del perfil seleccionado</label><button type="submit" class="secondary">Guardar perfil</button></form><form id="compare-form"><h3>Comparar sin publicar</h3><p>Solo contra el catálogo controlado guardado en este equipo.</p><label for="account">Cuenta del catálogo</label><input id="account" name="account_id" required autocomplete="off"><button type="submit" class="secondary">Comparar cuenta</button><div id="comparison"></div></form></div></section></div></section>
-<section id="view-unified" class="view" hidden><div class="page-heading"><div><h1>Lista unificada</h1><p>Todas las listas revisadas, con el mismo formato. SKU y precio conservan su proveedor y origen.</p></div><a class="button primary" href="/api/standardized/export">Descargar lista unificada XLSX</a></div><p>Se usa la última revisión de cada carga. Los códigos repetidos del mismo proveedor requieren revisión; no se elige un precio automáticamente. Los importes conservan su moneda y significado originales.</p><div id="unified-summary" class="summary-strip"></div><div class="toolbar"><div class="grow"><label for="unified-search">Buscar SKU, proveedor o archivo</label><input id="unified-search" type="search" autocomplete="off"></div><div><label for="unified-filter">Estado</label><select id="unified-filter"><option value="all">Todos</option><option value="ready">Listos</option><option value="pending">Pendientes</option></select></div><button type="button" id="refresh-unified" class="secondary">Actualizar lista</button></div><div id="unified-table" class="table-wrap" tabindex="0" aria-label="SKU y precios estandarizados"></div><div class="pagination"><button type="button" id="unified-prev" class="secondary">Anterior</button><span id="unified-page" aria-live="polite"></span><button type="button" id="unified-next" class="secondary">Siguiente</button></div></section>
-<section id="view-history" class="view" hidden><div class="page-heading"><div><h1>Historial de archivos</h1><p>Retomá una carga y consultá sus revisiones sin alterar resultados anteriores.</p></div><button id="refresh-history" class="secondary">Actualizar historial</button></div><div id="history-list"></div><div id="history-reviews"></div></section>
-<section id="view-profiles" class="view" hidden><div class="page-heading"><div><h1>Perfiles y reglas</h1><p>Cada cambio crea una versión. Retirar un perfil conserva las revisiones históricas.</p></div><button id="refresh-profiles" class="secondary">Actualizar perfiles</button></div><div id="profiles-list"></div></section>
-<section id="view-catalog" class="view" hidden><div class="page-heading"><div><h1>Catálogo controlado</h1><p>Datos locales para comparar. No representa una conexión a Mercado Libre.</p></div></div><div class="panel"><p>Reemplazá el catálogo completo solo cuando hayas revisado sus entradas. La cuenta distingue cada destino; Full permanece bloqueado.</p><form id="catalog-form"><label for="catalog-json">Entradas del catálogo (JSON)</label><textarea id="catalog-json" rows="18" spellcheck="false">[]</textarea><div class="actions"><button class="primary" type="submit">Reemplazar catálogo local</button><button type="button" id="refresh-catalog" class="secondary">Recargar guardado</button></div><p id="catalog-help" class="muted"></p></form></div></section>
-</main></div>
-<dialog id="correction-dialog" aria-labelledby="correction-title"><form id="correction-form"><div class="section-heading"><h2 id="correction-title">Corregir una celda</h2><button type="button" id="close-dialog" class="quiet" aria-label="Cerrar corrección">Cerrar</button></div><p>Se creará una revisión nueva. El original y la revisión anterior permanecen intactos.</p><p id="correction-error" role="alert"></p><label for="correction-row">Fila de origen</label><input id="correction-row" type="number" min="1" required><label for="correction-column">Columna</label><select id="correction-column" required></select><label for="correction-value">Nuevo valor</label><input id="correction-value" autocomplete="off"><label for="correction-type">Tipo de dato</label><select id="correction-type"><option value="text">Texto (conserva ceros iniciales)</option><option value="number">Número explícito</option><option value="empty">Vacío</option></select><label for="correction-reason">Motivo de la corrección</label><textarea id="correction-reason" rows="2" required></textarea><button type="submit" class="primary">Crear revisión corregida</button></form></dialog>
-</body></html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#2156d9">
+<title>Mesa de listas · Plantillas</title>
+<link rel="stylesheet" href="/static/styles.css">
+<script src="/static/app.js" defer>
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Ir al contenido</a>
+<section id="auth" class="auth" hidden>
+<div class="auth-box">
+<span class="brand-mark" aria-hidden="true">▦</span>
+<h1>Mesa de listas</h1>
+<p id="auth-help">Ingresá para revisar tus archivos.</p>
+<form id="auth-form">
+<label for="password">Contraseña local</label>
+<input id="password" name="password" type="password" required minlength="12" autocomplete="current-password">
+<button type="submit" class="primary" id="auth-submit">Ingresar</button>
+</form>
+<p id="auth-error" role="alert">
+</p>
+<small>Los archivos se conservan en este equipo. No se conectan cuentas de Mercado Libre.</small>
+</div>
+</section>
+<div id="shell" hidden>
+<aside class="sidebar">
+<a class="brand" href="#home">
+<span class="brand-mark" aria-hidden="true">▦</span>
+<span>Mesa de listas<small>Tu catálogo, en orden</small>
+</span>
+</a>
+<p class="nav-label">Tu espacio de trabajo</p>
+<nav aria-label="Principal">
+<a href="#home" data-view="home">Inicio</a>
+<a href="#work" data-view="work">Cargar una lista</a>
+<a href="#unified" data-view="unified">Lista unificada</a>
+<a href="#history" data-view="history">Archivos e historial</a>
+<a href="#profiles" data-view="profiles">Proveedores y perfiles</a>
+<a href="#catalog" data-view="catalog">Comparación de prueba</a>
+</nav>
+<div class="side-bottom">
+<span class="local-dot">
+</span> Espacio local<p>Originales protegidos.<br>Sin cambios en Mercado Libre.</p>
+<button id="logout" class="quiet">Cerrar sesión</button>
+</div>
+</aside>
+<main id="main" tabindex="-1">
+<header class="topbar">
+<span>Mesa de listas <span aria-hidden="true">/</span> <strong id="page-name">Inicio</strong>
+</span>
+<span class="local-status">
+<span class="local-dot">
+</span> Guardado en este equipo</span>
+</header>
+<div id="notice" class="notice" role="status" aria-live="polite" hidden>
+</div>
+<div id="error" class="error" role="alert" hidden>
+</div>
+<section id="view-home" class="view" hidden>
+<div class="page-heading">
+<div>
+<p class="kicker">Tu espacio de trabajo</p>
+<h1>Todas tus listas.<br>Un mismo idioma.</h1>
+<p>Reuní los archivos de tus proveedores y trabajá con lo esencial: cada SKU, su precio y su origen.</p>
+</div>
+<a href="#work" class="button primary">Cargar una lista <span aria-hidden="true">＋</span>
+</a>
+</div>
+<div id="home-summary" class="home-metrics" aria-live="polite">
+</div>
+<div class="home-grid">
+<section class="panel recent-panel">
+<div class="section-heading">
+<div>
+<h2>Últimos archivos</h2>
+<p>Retomá una carga o consultá sus revisiones.</p>
+</div>
+<a href="#history">Ver historial</a>
+</div>
+<div id="home-recent">
+<p class="empty">Cargando tu espacio…</p>
+</div>
+</section>
+<section class="next-action">
+<span class="mini-mark" aria-hidden="true">SKU / $</span>
+<h2>Del Excel a una lista común</h2>
+<p>Elegí tu archivo, confirmá SKU y precio, y revisá el resultado. Tus originales siempre quedan intactos.</p>
+<ol>
+<li>
+<strong>Cargá</strong> la lista del proveedor.</li>
+<li>
+<strong>Relacioná</strong> las columnas.</li>
+<li>
+<strong>Revisá</strong> y descargá.</li>
+</ol>
+<a href="#unified" class="button secondary">Abrir lista unificada</a>
+</section>
+</div>
+<div class="workspace-note">
+<span class="local-dot">
+</span>
+<p>Este espacio convierte y organiza tus listas. La conexión con Mercado Libre es una próxima entrega.</p>
+</div>
+</section>
+<section id="view-work" class="view">
+<div class="page-heading">
+<div>
+<p class="kicker">Importar y estandarizar</p>
+<h1>Una nueva lista, sin vueltas.</h1>
+<p>Elegí el archivo de tu proveedor. Después confirmamos dónde están el SKU y el precio.</p>
+</div>
+<a href="/api/demo.xlsx" class="button secondary">Descargar muestra sintética</a>
+</div>
+<ol class="import-steps" aria-label="Progreso de la carga">
+<li id="step-file" aria-current="step">
+<button type="button" id="jump-file">
+<span class="step-number">1</span>
+<span>
+<strong>Archivo</strong>
+<small>Elegí tu lista</small>
+</span>
+</button>
+</li>
+<li id="step-map">
+<button type="button" id="jump-map" disabled>
+<span class="step-number">2</span>
+<span>
+<strong>SKU y precio</strong>
+<small>Confirmá las columnas</small>
+</span>
+</button>
+</li>
+<li id="step-result">
+<button type="button" id="jump-result" disabled>
+<span class="step-number">3</span>
+<span>
+<strong>Resultado</strong>
+<small>Revisá y descargá</small>
+</span>
+</button>
+</li>
+</ol>
+<section class="upload-strip" id="upload-area">
+<div>
+<h2>Elegí el archivo de tu proveedor</h2>
+<p>XLSX o CSV UTF-8 · hasta 10 MiB · original intacto</p>
+</div>
+<form id="upload-form">
+<label class="sr-only" for="file">Archivo XLSX o CSV</label>
+<input type="file" id="file" name="file" accept=".xlsx,.csv" required>
+<button class="primary" type="submit">Cargar archivo</button>
+</form>
+</section>
+<div id="workspace" hidden>
+<div class="file-line">
+<strong id="filename">
+</strong>
+<span id="duplicate" class="tag">
+</span>
+</div>
+<details class="panel mapping-panel" id="mapping-panel" open>
+<summary>Relacionar las columnas de tu lista</summary>
+<form id="config-form">
+<div class="form-grid">
+<div>
+<label for="sheet">Hoja</label>
+<select id="sheet" name="sheet" required>
+</select>
+</div>
+<div>
+<label for="header-rows">Filas de encabezado</label>
+<input id="header-rows" name="header_rows" value="1" autocomplete="off" placeholder="1, 2…">
+<small>Números separados por coma.</small>
+</div>
+<div>
+<label for="data-start">Primera fila de datos</label>
+<input id="data-start" name="data_start" type="number" min="1" value="2" required>
+</div>
+<div>
+<label for="profile-select">Reutilizar perfil</label>
+<select id="profile-select">
+<option value="">Configurar esta carga</option>
+</select>
+<small id="profile-note">Las correcciones de filas quedan en su revisión.</small>
+</div>
+</div>
+<label for="source-supplier">Proveedor de esta lista</label>
+<input id="source-supplier" maxlength="100" autocomplete="off" placeholder="Identificá el proveedor para conservar el origen">
+<small>Se guarda en la revisión. Un código igual de otro proveedor no demuestra que sea el mismo producto.</small>
+<label for="sheet-kind">Uso de esta hoja</label>
+<select id="sheet-kind">
+<option value="catalog">Catálogo de productos</option>
+<option value="operational">Hoja auxiliar, métricas o tareas (sin productos)</option>
+</select>
+<details class="source-details">
+<summary>Ver las primeras filas del archivo</summary>
+<div id="source-preview" class="table-wrap preview" tabindex="0" aria-label="Vista inicial del archivo">
+</div>
+</details>
+<h3>Lo más importante: SKU y precio</h3>
+<p class="muted">Elegí qué columna corresponde a cada dato. Las sugerencias se confirman al crear la revisión.</p>
+<div id="mapping" class="mapping-grid">
+</div>
+<button type="button" id="suggest-mapping" class="secondary">Sugerir SKU y precio por encabezados</button>
+<p id="mapping-note" class="muted" role="status">
+</p>
+<details class="rules">
+<summary>Parámetros y cálculos explícitos</summary>
+<p>Sin factores predeterminados. Los cálculos usan referencias a celdas, parámetros y <code>{row}</code> para la fila actual.</p>
+<div class="split">
+<div>
+<h4>Parámetros numéricos</h4>
+<div id="parameter-rows">
+</div>
+<button type="button" id="add-parameter" class="secondary">Agregar parámetro</button>
+</div>
+<div>
+<h4>Fórmulas por columna</h4>
+<div id="formula-rows">
+</div>
+<button type="button" id="add-formula" class="secondary">Agregar fórmula</button>
+<small>Ejemplo de sintaxis: =D{row}*factor. No define una regla comercial.</small>
+</div>
+</div>
+<details>
+<summary>Configuración avanzada JSON</summary>
+<label for="advanced-config">Configuración completa</label>
+<textarea id="advanced-config" rows="8" spellcheck="false">
+</textarea>
+<button type="button" id="load-json" class="secondary">Aplicar JSON al formulario</button>
+<button type="button" id="show-json" class="quiet">Actualizar JSON desde formulario</button>
+</details>
+</details>
+<div class="actions">
+<button class="primary" type="submit">Crear revisión</button>
+<span class="muted">Revisar no publica ni modifica existencias.</span>
+</div>
+</form>
+</details>
+<section id="review-panel" hidden>
+<div class="section-heading">
+<div>
+<h2>Tu lista, revisada</h2>
+<p id="review-info" class="muted">
+</p>
+</div>
+<a id="export" class="button primary" href="#">Descargar revisión XLSX</a>
+</div>
+<div class="result-next">
+<p>La revisión ya está guardada. Podés corregir pendientes o verla junto a las otras listas.</p>
+<a href="#unified" class="button secondary">Ver en lista unificada</a>
+</div>
+<div id="summary" class="summary-strip">
+</div>
+<div class="toolbar">
+<div>
+<label for="row-filter">Mostrar filas</label>
+<select id="row-filter">
+<option value="all">Todas</option>
+<option value="usable">Utilizables</option>
+<option value="pending">Pendientes</option>
+<option value="rejected">Rechazadas</option>
+<option value="context">Contexto</option>
+<option value="empty">Vacías</option>
+<option value="issues">Con incidencias</option>
+</select>
+</div>
+<div class="grow">
+<label for="row-search">Buscar en datos e incidencias</label>
+<input id="row-search" type="search" autocomplete="off" placeholder="Código, descripción o mensaje…">
+</div>
+<div>
+<label for="page-size">Filas por página</label>
+<select id="page-size">
+<option>25</option>
+<option>50</option>
+</select>
+</div>
+</div>
+<div id="review-table" class="table-wrap" tabindex="0" aria-label="Filas revisadas">
+</div>
+<div class="pagination">
+<button id="prev" class="secondary">Anterior</button>
+<span id="page-info" aria-live="polite">
+</span>
+<button id="next" class="secondary">Siguiente</button>
+</div>
+<div class="split panel">
+<form id="save-profile">
+<h3>Conservar este criterio</h3>
+<p>El perfil reutiliza estructura y reglas. Las correcciones locales de celdas no se generalizan.</p>
+<label for="profile-name">Nombre del perfil</label>
+<input id="profile-name" name="name" required autocomplete="off">
+<label for="supplier">Proveedor o alcance</label>
+<input id="supplier" name="supplier" required autocomplete="off">
+<label class="check">
+<input type="checkbox" id="new-version">Crear nueva versión del perfil seleccionado</label>
+<button type="submit" class="secondary">Guardar perfil</button>
+</form>
+<form id="compare-form">
+<h3>Comparar sin publicar</h3>
+<p>Solo contra el catálogo controlado guardado en este equipo.</p>
+<label for="account">Cuenta del catálogo</label>
+<input id="account" name="account_id" required autocomplete="off">
+<button type="submit" class="secondary">Comparar cuenta</button>
+<div id="comparison">
+</div>
+</form>
+</div>
+</section>
+</div>
+</section>
+<section id="view-unified" class="view" hidden>
+<div class="page-heading">
+<div>
+<p class="kicker">Tu catálogo de trabajo</p>
+<h1>Cada SKU. Cada precio.</h1>
+<p>Todas tus listas revisadas en un mismo lugar, con su proveedor y su origen.</p>
+</div>
+<a class="button primary" href="/api/standardized/export">Descargar lista unificada XLSX</a>
+</div>
+<details class="list-help">
+<summary>Cómo se reúnen tus listas</summary>
+<p>Se usa la última revisión de cada carga. Los SKU repetidos del mismo proveedor quedan pendientes. Los precios conservan su moneda y significado originales; no se elige un precio automáticamente.</p>
+</details>
+<div id="unified-summary" class="summary-strip">
+</div>
+<div class="toolbar">
+<div class="grow">
+<label for="unified-search">Buscar SKU, proveedor o archivo</label>
+<input id="unified-search" type="search" autocomplete="off">
+</div>
+<div>
+<label for="unified-filter">Estado</label>
+<select id="unified-filter">
+<option value="all">Todos</option>
+<option value="ready">Listos</option>
+<option value="pending">Pendientes</option>
+</select>
+</div>
+<button type="button" id="clear-unified" class="quiet">Limpiar filtros</button>
+<button type="button" id="refresh-unified" class="secondary">Actualizar</button>
+</div>
+<div id="unified-table" class="table-wrap" tabindex="0" aria-label="SKU y precios estandarizados">
+</div>
+<div class="pagination">
+<button type="button" id="unified-prev" class="secondary">Anterior</button>
+<span id="unified-page" aria-live="polite">
+</span>
+<button type="button" id="unified-next" class="secondary">Siguiente</button>
+</div>
+</section>
+<section id="view-history" class="view" hidden>
+<div class="page-heading">
+<div>
+<h1>Historial de archivos</h1>
+<p>Retomá una carga y consultá sus revisiones sin alterar resultados anteriores.</p>
+</div>
+<button id="refresh-history" class="secondary">Actualizar historial</button>
+</div>
+<div id="history-list">
+</div>
+<div id="history-reviews">
+</div>
+</section>
+<section id="view-profiles" class="view" hidden>
+<div class="page-heading">
+<div>
+<h1>Proveedores y perfiles</h1>
+<p>Cada cambio crea una versión. Retirar un perfil conserva las revisiones históricas.</p>
+</div>
+<button id="refresh-profiles" class="secondary">Actualizar perfiles</button>
+</div>
+<div id="profiles-list">
+</div>
+</section>
+<section id="view-catalog" class="view" hidden>
+<div class="page-heading">
+<div>
+<h1>Comparación de prueba</h1>
+<p>Datos locales para comparar. No representa una conexión a Mercado Libre.</p>
+</div>
+</div>
+<div class="panel">
+<p>Reemplazá el catálogo completo solo cuando hayas revisado sus entradas. La cuenta distingue cada destino; Full permanece bloqueado.</p>
+<form id="catalog-form">
+<label for="catalog-json">Entradas del catálogo (JSON)</label>
+<textarea id="catalog-json" rows="18" spellcheck="false">[]</textarea>
+<div class="actions">
+<button class="primary" type="submit">Reemplazar catálogo local</button>
+<button type="button" id="refresh-catalog" class="secondary">Recargar guardado</button>
+</div>
+<p id="catalog-help" class="muted">
+</p>
+</form>
+</div>
+</section>
+</main>
+</div>
+<dialog id="correction-dialog" aria-labelledby="correction-title">
+<form id="correction-form">
+<div class="section-heading">
+<h2 id="correction-title">Corregir una celda</h2>
+<button type="button" id="close-dialog" class="quiet" aria-label="Cerrar corrección">Cerrar</button>
+</div>
+<p>Se creará una revisión nueva. El original y la revisión anterior permanecen intactos.</p>
+<p id="correction-error" role="alert">
+</p>
+<label for="correction-row">Fila de origen</label>
+<input id="correction-row" type="number" min="1" required>
+<label for="correction-column">Columna</label>
+<select id="correction-column" required>
+</select>
+<label for="correction-value">Nuevo valor</label>
+<input id="correction-value" autocomplete="off">
+<label for="correction-type">Tipo de dato</label>
+<select id="correction-type">
+<option value="text">Texto (conserva ceros iniciales)</option>
+<option value="number">Número explícito</option>
+<option value="empty">Vacío</option>
+</select>
+<label for="correction-reason">Motivo de la corrección</label>
+<textarea id="correction-reason" rows="2" required>
+</textarea>
+<button type="submit" class="primary">Crear revisión corregida</button>
+</form>
+</dialog>
+</body>
+</html>
